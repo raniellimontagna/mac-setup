@@ -34,6 +34,7 @@ cask "visual-studio-code"   # editor
 cask "ghostty"              # terminal
 cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
+cask "tailscale-app"        # VPN mesh (acesso remoto ao servidor de casa)
 cask "linearmouse"          # scroll por dispositivo + desativa aceleração do mouse
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
