@@ -31,4 +31,11 @@ cask "bruno"                # cliente de API (offline, git-friendly)
 cask "mos"                  # controla scroll do mouse/trackpad separadamente (opcional)
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
+
+# --- Fora de desenvolvimento ---
+cask "spotify"              # música
+cask "bitwarden"            # gerenciador de senhas
+cask "whatsapp"             # mensagens
+cask "discord"              # comunidades / voz
+cask "telegram"             # mensagens
 cask "font-jetbrains-mono-nerd-font"   # fonte com ícones (pro prompt do Starship)
