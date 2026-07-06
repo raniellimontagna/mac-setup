@@ -29,6 +29,21 @@ echo "==> opencode (SST)"
 npm install -g opencode-ai
 
 echo ""
+echo "==> Rodando scripts de pós-instalação"
+# O npm 11 bloqueia postinstall por padrão (allowlist "trusted identity"), então
+# disparamos manualmente os scripts nativos/necessários dos pacotes globais.
+GROOT="$(npm root -g)"
+run_pi() { # <dir> <comando> <nome>
+  if [ -d "$1" ]; then
+    ( cd "$1" && eval "$2" ) >/dev/null 2>&1 && echo "  ✅ $3" || echo "  ⚠️ $3 (rode manualmente se der problema)"
+  fi
+}
+run_pi "$GROOT/@anthropic-ai/claude-code" "AUTHORIZED=1 node install.cjs" "claude-code"
+run_pi "$GROOT/opencode-ai" "node ./postinstall.mjs" "opencode"
+run_pi "$GROOT/@google/gemini-cli/node_modules/@github/keytar" "node script/install.js || npm run build" "keytar (gemini)"
+run_pi "$GROOT/@google/gemini-cli/node_modules/node-pty" "npx --yes node-gyp rebuild && { [ -f scripts/post-install.js ] && node scripts/post-install.js || true; }" "node-pty (gemini)"
+
+echo ""
 echo "Instalados. Versões:"
 for c in claude codex gemini opencode; do
   command -v "$c" >/dev/null 2>&1 && printf "  %-9s %s\n" "$c" "$($c --version 2>/dev/null | head -1)" || printf "  %-9s (rode 'hash -r' ou reabra o terminal)\n" "$c"
