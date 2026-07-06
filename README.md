@@ -23,6 +23,9 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   repetição de tecla mais rápida, mostrar arquivos ocultos no Finder, Dock com autohide, etc.
   Revise antes e rode com `bash macos-defaults.sh`.
 - **[`editorconfig`](./editorconfig)** — base de `.editorconfig`; copie para a raiz dos seus projetos.
+- **[`mobile-ios.sh`](./mobile-ios.sh)** — aponta o `xcode-select` para o Xcode, baixa o runtime do
+  iOS e cria/inicia um iPhone no Simulator. Precisa de `sudo` (senha) — rode com `bash mobile-ios.sh`.
+  O SDK/emulador **Android** vem pelo Android Studio (abra-o uma vez e instale o SDK pelo assistente).
 - **[`ai-clis.sh`](./ai-clis.sh)** — instala os CLIs de IA (Claude Code, Codex, Gemini, opencode)
   pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
   é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).

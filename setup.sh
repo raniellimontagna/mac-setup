@@ -107,6 +107,9 @@ eval "$(fnm env --use-on-cd)"
 corepack enable
 corepack prepare pnpm@latest --activate
 
+# CLI do Expo (mobile)
+npm install -g eas-cli
+
 # --- 8. Extensões do VS Code ---
 if command -v code >/dev/null 2>&1 && [ -f "$DIR/vscode/extensions.txt" ]; then
   info "Instalando extensões do VS Code..."

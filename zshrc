@@ -17,6 +17,15 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+# --- Android / mobile ---
+# JDK 17 (para Gradle / React Native run-android)
+[ -x /opt/homebrew/opt/openjdk@17/bin/java ] && export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+# Android SDK (instalado pelo Android Studio)
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+if [ -d "$ANDROID_HOME" ]; then
+  export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin"
+fi
+
 # --- Editor padrão ---
 export EDITOR="code --wait"
 

@@ -22,8 +22,14 @@ brew "lazygit"      # TUI de git
 brew "git-delta"    # diffs bonitos no git
 brew "btop"         # monitor de sistema
 
+# --- Mobile (Expo / React Native / Flutter) ---
+brew "watchman"             # observa mudanças de arquivo (Metro bundler)
+brew "cocoapods"            # dependências nativas iOS
+brew "openjdk@17"           # JDK para builds Android (Gradle)
+
 # --- Apps ---
 cask "orbstack"             # Docker/containers leve para Apple Silicon
+cask "android-studio"       # IDE + SDK/emulador Android
 cask "visual-studio-code"   # editor
 cask "ghostty"              # terminal
 cask "google-chrome"        # navegador
