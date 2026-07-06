@@ -28,7 +28,7 @@ cask "visual-studio-code"   # editor
 cask "ghostty"              # terminal
 cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
-cask "mos"                  # controla scroll do mouse/trackpad separadamente (opcional)
+cask "linearmouse"          # scroll por dispositivo + desativa aceleração do mouse
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
 

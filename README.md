@@ -56,4 +56,5 @@ O script é **idempotente**: pode rodar de novo sem quebrar nada.
 
 O macOS vem com "rolagem natural" ligada. Para inverter (como no Linux/Windows):
 Ajustes do Sistema → Trackpad / Mouse → desmarque **Rolagem natural**.
-O app **Mos** (no Brewfile) permite configurar mouse e trackpad separadamente.
+O app **LinearMouse** (no Brewfile) permite configurar scroll por dispositivo
+(mouse vs trackpad separados) e desativar a aceleração do ponteiro.
