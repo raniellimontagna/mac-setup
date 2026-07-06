@@ -5,6 +5,7 @@
 brew "git"          # git atualizado (mais novo que o do sistema)
 brew "gh"           # GitHub CLI
 brew "fnm"          # Fast Node Manager (gerencia versões do Node)
+brew "uv"           # Python moderno + gerenciador de pacotes/venv rápido
 brew "starship"                  # prompt do terminal (bonito e rápido)
 brew "zsh-autosuggestions"       # sugere comandos do histórico
 brew "zsh-syntax-highlighting"   # colore o comando enquanto digita
@@ -28,4 +29,6 @@ cask "ghostty"              # terminal
 cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
 cask "mos"                  # controla scroll do mouse/trackpad separadamente (opcional)
+cask "raycast"              # launcher / atalhos / clipboard / snippets
+cask "stats"                # monitor de sistema na barra de menu
 cask "font-jetbrains-mono-nerd-font"   # fonte com ícones (pro prompt do Starship)
