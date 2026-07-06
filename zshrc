@@ -27,8 +27,24 @@ setopt HIST_IGNORE_ALL_DUPS
 setopt SHARE_HISTORY
 setopt INC_APPEND_HISTORY
 
+# --- CLI modernas ---
+# eza (ls moderno). Se não existir, cai no ls normal.
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -lah --icons --git --group-directories-first'
+  alias lt='eza --tree --level=2 --icons'
+else
+  alias ll='ls -lah'
+fi
+# bat (cat com syntax highlight)
+command -v bat >/dev/null 2>&1 && export BAT_THEME="ansi"
+# zoxide (cd inteligente: use `z <parte-do-nome>`)
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+# fzf (Ctrl+R histórico, Ctrl+T arquivos)
+command -v fzf >/dev/null 2>&1 && source <(fzf --zsh) 2>/dev/null
+
 # --- Aliases úteis ---
-alias ll='ls -lah'
+alias lg='lazygit'
 alias gs='git status'
 alias gc='git commit'
 alias gco='git checkout'

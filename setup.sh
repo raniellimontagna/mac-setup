@@ -54,6 +54,14 @@ git config --global alias.lg "log --oneline --graph --decorate -20"
 git config --global alias.last "log -1 HEAD --stat"
 git config --global alias.unstage "reset HEAD --"
 
+# git-delta como pager (diffs bonitos), se instalado
+if command -v delta >/dev/null 2>&1; then
+  git config --global core.pager delta
+  git config --global interactive.diffFilter "delta --color-only"
+  git config --global delta.navigate true
+  git config --global merge.conflictStyle zdiff3
+fi
+
 # --- 5. Chave SSH para o GitHub ---
 if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
   info "Gerando chave SSH (ed25519)..."

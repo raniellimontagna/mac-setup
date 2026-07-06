@@ -7,7 +7,7 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 
 - Instala o **Xcode Command Line Tools** (se faltar)
 - Instala o **Homebrew**
-- Instala pacotes e apps via [`Brewfile`](./Brewfile): `git`, `gh`, `fnm`, Starship, plugins do zsh, Nerd Font, OrbStack, VS Code, Ghostty, Chrome, Mos
+- Instala pacotes e apps via [`Brewfile`](./Brewfile): `git`, `gh`, `fnm`, Starship, plugins do zsh, Nerd Font, **CLI modernas** (fzf, zoxide, eza, bat, fd, ripgrep, lazygit, git-delta, btop), OrbStack, VS Code, Ghostty, Chrome, Bruno, Mos
 - Configura o **Git** (nome, email e defaults sensatos)
 - Gera uma **chave SSH** (`ed25519`) e o `~/.ssh/config` usando o keychain do macOS
 - Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
@@ -23,6 +23,9 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   repetição de tecla mais rápida, mostrar arquivos ocultos no Finder, Dock com autohide, etc.
   Revise antes e rode com `bash macos-defaults.sh`.
 - **[`editorconfig`](./editorconfig)** — base de `.editorconfig`; copie para a raiz dos seus projetos.
+- **[`ai-clis.sh`](./ai-clis.sh)** — instala os CLIs de IA (Claude Code, Codex, Gemini, opencode)
+  pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
+  é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).
 
 ## Como usar num Mac novo
 
