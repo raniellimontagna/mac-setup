@@ -53,6 +53,23 @@ O script é **idempotente**: pode rodar de novo sem quebrar nada.
 3. Teste: `ssh -T git@github.com`
 4. Login no GitHub CLI: `gh auth login`
 
+## Repos privados de empresa
+
+Clonar todos os repos de uma org: `bash clone-org.sh <org> ~/Projetos/empresa/<nome>`.
+Para as dependências instalarem, alguns acessos precisam ser configurados (uma vez por Mac):
+
+- **Módulos Go privados** — o `setup.sh` já configura `git ... insteadOf` (usa SSH). Marque os orgs:
+  ```bash
+  go env -w GOPRIVATE="github.com/esperto-sistemas,github.com/quadralize,github.com/attodevlabs,github.com/ZenPush"
+  ```
+- **GitHub Packages privado** (`@attodevlabs/*` via pnpm) — precisa de token com escopo `read:packages`:
+  ```bash
+  gh auth refresh -h github.com -s read:packages
+  printf '//npm.pkg.github.com/:_authToken=%s\n' "$(gh auth token)" >> ~/.npmrc && chmod 600 ~/.npmrc
+  ```
+  (o token fica só no `~/.npmrc` local — **nunca** comitar)
+- **pnpm em repos com Node pinado** — use `corepack pnpm install` (funciona em qualquer versão do Node).
+
 ## Personalizando
 
 - **Apps/pacotes**: edite o [`Brewfile`](./Brewfile) e rode `brew bundle`

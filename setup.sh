@@ -44,6 +44,8 @@ git config --global core.editor "code --wait"
 git config --global color.ui auto
 git config --global rerere.enabled true
 git config --global core.excludesfile "$HOME/.gitignore_global"
+# Usa SSH no lugar de HTTPS no github (necessário p/ módulos Go privados)
+git config --global url."git@github.com:".insteadOf "https://github.com/"
 
 # Aliases úteis do git
 git config --global alias.st "status -sb"
