@@ -26,6 +26,9 @@ if [ -d "$ANDROID_HOME" ]; then
   export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin"
 fi
 
+# --- Go ---
+command -v go >/dev/null 2>&1 && export PATH="$PATH:$(go env GOPATH)/bin"
+
 # --- Editor padrão ---
 export EDITOR="code --wait"
 
