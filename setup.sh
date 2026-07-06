@@ -43,6 +43,16 @@ git config --global fetch.prune true
 git config --global core.editor "code --wait"
 git config --global color.ui auto
 git config --global rerere.enabled true
+git config --global core.excludesfile "$HOME/.gitignore_global"
+
+# Aliases úteis do git
+git config --global alias.st "status -sb"
+git config --global alias.co "checkout"
+git config --global alias.br "branch"
+git config --global alias.cm "commit -m"
+git config --global alias.lg "log --oneline --graph --decorate -20"
+git config --global alias.last "log -1 HEAD --stat"
+git config --global alias.unstage "reset HEAD --"
 
 # --- 5. Chave SSH para o GitHub ---
 if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
@@ -75,6 +85,7 @@ if [ -e "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
   echo "  Backup do .zshrc antigo em ~/.zshrc.backup"
 fi
 ln -sf "$DIR/zshrc" "$HOME/.zshrc"
+ln -sf "$DIR/gitignore_global" "$HOME/.gitignore_global"
 mkdir -p "$HOME/.config" "$HOME/.config/ghostty"
 ln -sf "$DIR/starship.toml" "$HOME/.config/starship.toml"
 ln -sf "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
@@ -88,7 +99,15 @@ eval "$(fnm env --use-on-cd)"
 corepack enable
 corepack prepare pnpm@latest --activate
 
-# --- 8. Estrutura de pastas ---
+# --- 8. Extensões do VS Code ---
+if command -v code >/dev/null 2>&1 && [ -f "$DIR/vscode/extensions.txt" ]; then
+  info "Instalando extensões do VS Code..."
+  while IFS= read -r ext; do
+    [ -n "$ext" ] && code --install-extension "$ext" --force >/dev/null 2>&1 && echo "  + $ext"
+  done < "$DIR/vscode/extensions.txt"
+fi
+
+# --- 9. Estrutura de pastas ---
 mkdir -p ~/Projetos/pessoal ~/Projetos/empresa
 
 info "Concluído! Feche e reabra o terminal."

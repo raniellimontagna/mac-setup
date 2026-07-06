@@ -12,8 +12,17 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - Gera uma **chave SSH** (`ed25519`) e o `~/.ssh/config` usando o keychain do macOS
 - Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
   - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
+- Configura **gitignore global** ([`gitignore_global`](./gitignore_global)) e **aliases** do git (`st`, `co`, `lg`, `cm`...)
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
+- Instala as **extensões do VS Code** de [`vscode/extensions.txt`](./vscode/extensions.txt)
 - Cria a estrutura `~/Projetos/pessoal` e `~/Projetos/empresa`
+
+### Extras (rode manualmente)
+
+- **[`macos-defaults.sh`](./macos-defaults.sh)** — ajustes de sistema opcionais: scroll estilo Linux,
+  repetição de tecla mais rápida, mostrar arquivos ocultos no Finder, Dock com autohide, etc.
+  Revise antes e rode com `bash macos-defaults.sh`.
+- **[`editorconfig`](./editorconfig)** — base de `.editorconfig`; copie para a raiz dos seus projetos.
 
 ## Como usar num Mac novo
 
