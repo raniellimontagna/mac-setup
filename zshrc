@@ -62,6 +62,8 @@ alias gl='git pull'
 alias gd='git diff'
 alias gb='git branch'
 alias projetos='cd ~/Projetos'
+alias ios='open -a Simulator'                    # abre o iOS Simulator
+alias ios-list='xcrun simctl list devices'       # lista os simuladores
 
 # --- Autocompletion do git/brew ---
 if type brew &>/dev/null; then
