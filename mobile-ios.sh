@@ -27,9 +27,13 @@ info "4/5  Baixando o runtime do iOS (alguns GB, pode demorar)..."
 xcodebuild -downloadPlatform iOS
 
 info "5/5  Criando e iniciando um iPhone..."
-# Pega o device type de iPhone mais novo e o runtime iOS mais novo
-DEVTYPE="$(xcrun simctl list devicetypes | grep -oE 'com.apple.CoreSimulator.SimDeviceType.iPhone-[^ )]*' | tail -1)"
-RUNTIME="$(xcrun simctl list runtimes | grep -oE 'com.apple.CoreSimulator.SimRuntime.iOS-[^ )]*' | tail -1)"
+# Pega o iPhone e o runtime iOS MAIS NOVOS (ordenação por versão — não use tail,
+# a lista não vem ordenada e pode cair num device velho e incompatível).
+DEVTYPE="$(xcrun simctl list devicetypes 2>/dev/null \
+  | grep -oE 'com.apple.CoreSimulator.SimDeviceType.iPhone-[0-9][0-9A-Za-z-]*' \
+  | awk -F 'iPhone-' '{print $2"\t"$0}' | sort -rV | head -1 | cut -f2-)"
+RUNTIME="$(xcrun simctl list runtimes 2>/dev/null \
+  | grep -oE 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9][0-9-]*' | sort -rV | head -1)"
 echo "  device: $DEVTYPE"
 echo "  runtime: $RUNTIME"
 
