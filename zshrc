@@ -43,3 +43,17 @@ if type brew &>/dev/null; then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
 autoload -Uz compinit && compinit
+
+# --- Prompt: Starship ---
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
+
+# --- Plugins do zsh ---
+# autosuggestions: sugere comandos do histórico (aceita com ->)
+[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] && \
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# syntax-highlighting: colore o comando enquanto você digita.
+# IMPORTANTE: precisa ser o ÚLTIMO source do arquivo.
+[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && \
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

@@ -1,0 +1,34 @@
+# starship.toml — configuração do prompt (symlink em ~/.config/starship.toml)
+# Docs: https://starship.rs/config/
+
+# Linha em branco antes de cada prompt, respira melhor
+add_newline = true
+
+# Símbolo do prompt: verde em sucesso, vermelho em erro
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+# Diretório atual
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+# Git
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold yellow"
+
+# Node — só aparece em projetos com package.json
+[nodejs]
+symbol = " "
+style = "bold green"
+
+# Duração de comandos lentos (> 2s)
+[cmd_duration]
+min_time = 2000
+format = "took [$duration](bold yellow) "

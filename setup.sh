@@ -68,13 +68,16 @@ EOF
   echo ""
 fi
 
-# --- 6. .zshrc (symlink para o do repo) ---
-info "Instalando .zshrc..."
+# --- 6. .zshrc + starship (symlinks para o repo) ---
+info "Instalando .zshrc e config do Starship..."
 if [ -e "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
   cp "$HOME/.zshrc" "$HOME/.zshrc.backup"
   echo "  Backup do .zshrc antigo em ~/.zshrc.backup"
 fi
 ln -sf "$DIR/zshrc" "$HOME/.zshrc"
+mkdir -p "$HOME/.config" "$HOME/.config/ghostty"
+ln -sf "$DIR/starship.toml" "$HOME/.config/starship.toml"
+ln -sf "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
 
 # --- 7. Node LTS via fnm + pnpm ---
 info "Instalando Node LTS via fnm..."

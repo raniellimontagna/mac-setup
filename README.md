@@ -7,10 +7,11 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 
 - Instala o **Xcode Command Line Tools** (se faltar)
 - Instala o **Homebrew**
-- Instala pacotes e apps via [`Brewfile`](./Brewfile): `git`, `gh`, `fnm`, OrbStack, VS Code, Ghostty, Chrome, Mos
+- Instala pacotes e apps via [`Brewfile`](./Brewfile): `git`, `gh`, `fnm`, Starship, plugins do zsh, Nerd Font, OrbStack, VS Code, Ghostty, Chrome, Mos
 - Configura o **Git** (nome, email e defaults sensatos)
 - Gera uma **chave SSH** (`ed25519`) e o `~/.ssh/config` usando o keychain do macOS
-- Instala o [`.zshrc`](./zshrc) (Homebrew, fnm/Node, pnpm, aliases) como symlink
+- Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
+  - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
 - Cria a estrutura `~/Projetos/pessoal` e `~/Projetos/empresa`
 

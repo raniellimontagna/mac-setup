@@ -1,0 +1,16 @@
+# Ghostty — config (symlink em ~/.config/ghostty/config)
+# Docs: https://ghostty.org/docs/config
+
+# Fonte com ícones (Nerd Font) — necessária pro prompt do Starship
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+
+# Tema escuro
+theme = catppuccin-mocha
+
+# Respiro nas bordas
+window-padding-x = 10
+window-padding-y = 8
+
+# Opacidade leve (opcional — ajuste ou remova)
+# background-opacity = 0.96
