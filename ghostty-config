@@ -6,7 +6,7 @@ font-family = JetBrainsMono Nerd Font
 font-size = 14
 
 # Tema escuro
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
 
 # Respiro nas bordas
 window-padding-x = 10
