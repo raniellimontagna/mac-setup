@@ -37,6 +37,8 @@ cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
 cask "tailscale-app"        # VPN mesh (acesso remoto ao servidor de casa)
 cask "linearmouse"          # scroll por dispositivo + desativa aceleração do mouse
+cask "shottr"               # screenshots (scrolling, OCR, anotação, redação)
+cask "keka"                 # extrai e cria arquivos (zip/rar/7z/tar...)
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
 cask "rectangle"            # organizar janelas com atalhos / arrastar pra borda
