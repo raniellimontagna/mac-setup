@@ -7,6 +7,7 @@ brew "gh"           # GitHub CLI
 brew "fnm"          # Fast Node Manager (gerencia versões do Node)
 brew "uv"           # Python moderno + gerenciador de pacotes/venv rápido
 brew "go"           # linguagem Go
+brew "llama.cpp"    # motor de inferência de LLMs (llama-server/bench/quantize)
 brew "starship"                  # prompt do terminal (bonito e rápido)
 brew "zsh-autosuggestions"       # sugere comandos do histórico
 brew "zsh-syntax-highlighting"   # colore o comando enquanto digita
