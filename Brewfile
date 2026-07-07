@@ -52,4 +52,5 @@ cask "bitwarden"            # gerenciador de senhas
 cask "whatsapp"             # mensagens
 cask "discord"              # comunidades / voz
 cask "telegram"             # mensagens
+cask "steam"                # jogos
 cask "font-jetbrains-mono-nerd-font"   # fonte com ícones (pro prompt do Starship)
