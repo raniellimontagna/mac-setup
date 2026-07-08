@@ -70,6 +70,18 @@ Para as dependências instalarem, alguns acessos precisam ser configurados (uma 
   (o token fica só no `~/.npmrc` local — **nunca** comitar)
 - **pnpm em repos com Node pinado** — use `corepack pnpm install` (funciona em qualquer versão do Node).
 
+## Economia de tokens (agentes de IA)
+
+Duas alavancas que reduzem consumo de token em sessões com agentes (Claude Code, Codex...):
+
+- **rtk** (Rust Token Killer — já no `Brewfile`) — comprime a **saída de comandos** que o agente lê.
+  Prefixe: `rtk git status`, `rtk pnpm install`, `rtk tsc`. Veja economia com `rtk gain`.
+- **caveman** — plugin/skill que faz o **próprio agente responder comprimido** (~65% menos tokens de
+  saída). **Não é brew** — instala dentro de cada agente:
+  - **Claude Code:** `claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman` (auto-ativa)
+  - **Codex:** `npx skills add JuliusBrussee/caveman -a codex` (ative com `/caveman` uma vez por sessão)
+  - Níveis: `/caveman lite` (tira só formalidades) → default → `full` → `ultra`. Comece no `lite`.
+
 ## Personalizando
 
 - **Apps/pacotes**: edite o [`Brewfile`](./Brewfile) e rode `brew bundle`
