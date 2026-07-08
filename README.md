@@ -29,6 +29,9 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - **[`mobile-ios.sh`](./mobile-ios.sh)** — aponta o `xcode-select` para o Xcode, baixa o runtime do
   iOS e cria/inicia um iPhone no Simulator. Precisa de `sudo` (senha) — rode com `bash mobile-ios.sh`.
   O SDK/emulador **Android** vem pelo Android Studio (abra-o uma vez e instale o SDK pelo assistente).
+- **[`claude-plugins.sh`](./claude-plugins.sh)** — instala os plugins de Claude Code que sempre uso:
+  **superpowers**, **gsd** (`jnuyens/gsd-plugin`) e **caveman**. Idempotente. Requer o `ai-clis.sh` antes
+  (precisa do CLI `claude`). No Codex, o caveman é à parte: `npx skills add JuliusBrussee/caveman -a codex`.
 - **[`ai-clis.sh`](./ai-clis.sh)** — instala os CLIs de IA (Claude Code, Codex, Gemini, opencode)
   pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
   é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).
