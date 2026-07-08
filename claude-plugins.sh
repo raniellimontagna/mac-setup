@@ -19,13 +19,13 @@ add_install() { # <marketplace-repo-github> <plugin@marketplace>
 }
 
 add_install anthropics/claude-plugins-official superpowers@claude-plugins-official
-add_install jnuyens/gsd-plugin                 gsd@gsd-plugin
 add_install JuliusBrussee/caveman              caveman@caveman
 
 echo ""
 echo "Plugins instalados:"
-claude plugin list 2>&1 | grep -iE "superpowers|gsd|caveman" || true
+claude plugin list 2>&1 | grep -iE "superpowers|caveman" || true
 
 echo ""
-echo "Obs.: no Codex, o caveman instala à parte:"
-echo "  npx skills add JuliusBrussee/caveman -a codex"
+echo "Obs.:"
+echo "  - GSD (multi-runtime): rode 'bash gsd-install.sh' (@opengsd/gsd-core)."
+echo "  - caveman no Codex: 'npx skills add JuliusBrussee/caveman -a codex'."

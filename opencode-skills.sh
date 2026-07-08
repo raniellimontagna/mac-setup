@@ -5,8 +5,8 @@
 # então não interfere no Claude Code). Idempotente — rode de novo após
 # atualizar os plugins (ele re-aponta pra versão mais nova).
 #
-# NÃO inclui o gsd: o fluxo dele (slash commands /gsd:*, hooks, MCP) é nativo
-# do Claude Code e não funciona no opencode.
+# NÃO inclui o gsd: ele tem instalador multi-runtime próprio (@opengsd/gsd-core,
+# veja gsd-install.sh) que já instala nativo no opencode, Claude Code e Codex.
 #
 set -uo pipefail
 
