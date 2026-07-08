@@ -102,3 +102,14 @@ O macOS vem com "rolagem natural" ligada. Para inverter (como no Linux/Windows):
 Ajustes do Sistema → Trackpad / Mouse → desmarque **Rolagem natural**.
 O app **LinearMouse** (no Brewfile) permite configurar scroll por dispositivo
 (mouse vs trackpad separados) e desativar a aceleração do ponteiro.
+
+## Gotchas de macOS (scripts shell)
+
+O macOS usa ferramentas **BSD**, não GNU — alguns comandos diferem do Linux e
+quebram scripts que passaram só no CI Linux. Os que mais mordem:
+
+- **`sed -i`** — no macOS exige sufixo de backup (`sed -i '' 's/…/'`); no Linux é
+  `sed -i 's/…/'`. Para portabilidade, evite `sed -i` e use **`perl -i -pe 's/…/'`**
+  (idêntico nos dois SOs, sem deixar arquivo `.bak`).
+- Outros BSD-vs-GNU: `readlink -f`, `date -d`, `stat -c`, `xargs -r`. Se precisar das
+  versões GNU: `brew install coreutils gnu-sed` (ficam com prefixo `g`: `gsed`, `gdate`).
