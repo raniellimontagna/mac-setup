@@ -32,6 +32,9 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - **[`claude-plugins.sh`](./claude-plugins.sh)** — instala os plugins de Claude Code que sempre uso:
   **superpowers**, **gsd** (`jnuyens/gsd-plugin`) e **caveman**. Idempotente. Requer o `ai-clis.sh` antes
   (precisa do CLI `claude`). No Codex, o caveman é à parte: `npx skills add JuliusBrussee/caveman -a codex`.
+- **[`opencode-skills.sh`](./opencode-skills.sh)** — expõe os skills do **superpowers** e **caveman** para o
+  **opencode** (symlinks em `~/.config/opencode/skills`, isolado do Claude Code). Idempotente — rode de novo
+  após atualizar os plugins. O **gsd não é portado**: o fluxo dele (`/gsd:*`, hooks, MCP) é nativo do Claude Code.
 - **[`ai-clis.sh`](./ai-clis.sh)** — instala os CLIs de IA (Claude Code, Codex, Gemini, opencode)
   pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
   é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).
