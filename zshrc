@@ -1,5 +1,8 @@
 # ~/.zshrc — gerenciado pelo repo mac-setup (symlink)
 
+# --- Segredos locais (NÃO versionados — ver ~/.secrets.zsh) ---
+[ -f "$HOME/.secrets.zsh" ] && source "$HOME/.secrets.zsh"
+
 # --- Homebrew (Apple Silicon) ---
 if [ -x /opt/homebrew/bin/brew ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
