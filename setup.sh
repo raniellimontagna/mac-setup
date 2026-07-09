@@ -112,6 +112,13 @@ corepack prepare pnpm@latest --activate
 # CLI do Expo (mobile)
 npm install -g eas-cli
 
+# --- Graphify (grafo de conhecimento de código, via uv) ---
+if command -v uv >/dev/null 2>&1; then
+  info "Instalando Graphify (graphifyy)..."
+  uv tool install "graphifyy==0.9.11" >/dev/null 2>&1 && ok "Graphify instalado" \
+    || warn "Graphify: falha ao instalar via uv (rode 'uv tool install graphifyy' manualmente)"
+fi
+
 # --- 8. Extensões do VS Code ---
 if command -v code >/dev/null 2>&1 && [ -f "$DIR/vscode/extensions.txt" ]; then
   info "Instalando extensões do VS Code..."

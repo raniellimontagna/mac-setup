@@ -5,7 +5,8 @@
 brew "git"          # git atualizado (mais novo que o do sistema)
 brew "gh"           # GitHub CLI
 brew "fnm"          # Fast Node Manager (gerencia versões do Node)
-brew "uv"           # Python moderno + gerenciador de pacotes/venv rápido
+brew "uv"           # gerenciador de pacotes/venv Python rápido
+brew "python@3.13"  # Python (estável)
 brew "go"           # linguagem Go
 brew "llama.cpp"    # motor de inferência de LLMs (llama-server/bench/quantize)
 brew "rtk"          # proxy de CLI que reduz consumo de tokens (Rust Token Killer)
