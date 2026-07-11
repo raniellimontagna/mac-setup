@@ -20,6 +20,11 @@ install_skill() { # <repo-github> <skill> <label>
 install_skill mattpocock/skills grill-me "Matt Pocock — grill-me"
 install_skill mattpocock/skills grilling "Matt Pocock — grilling (dependência do grill-me)"
 
+# grill-with-docs: mesma entrevista, mas escreve CONTEXT.md (glossário) e ADRs
+# no repo conforme as decisões fecham. Depende do skill "domain-modeling".
+install_skill mattpocock/skills grill-with-docs "Matt Pocock — grill-with-docs"
+install_skill mattpocock/skills domain-modeling "Matt Pocock — domain-modeling (dependência do grill-with-docs)"
+
 echo "Skills instalados em ~/.claude/skills/. Reinicie o Claude Code."
 echo "Uso: peça pra revisar um plano/design (ex.: 'quero que você me entreviste"
 echo "sobre esse plano antes de implementar', ou invoque a skill grill-me)."
