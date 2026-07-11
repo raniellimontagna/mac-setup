@@ -11,7 +11,9 @@ command -v fnm >/dev/null 2>&1 && eval "$(fnm env)" 2>/dev/null || true
 
 install_skill() { # <repo-github> <skill> <label>
   echo "==> $3 ($2)"
-  npx --yes skills@latest add "$1" -s "$2" -a claude-code -g -y 2>&1 | tail -6 || echo "  ⚠️  falha em $2"
+  npx --yes skills@latest add "$1" -s "$2" \
+    -a claude-code -a codex -a opencode \
+    -g -y 2>&1 | tail -6 || echo "  ⚠️  falha em $2"
   echo ""
 }
 
@@ -25,6 +27,7 @@ install_skill mattpocock/skills grilling "Matt Pocock — grilling (dependência
 install_skill mattpocock/skills grill-with-docs "Matt Pocock — grill-with-docs"
 install_skill mattpocock/skills domain-modeling "Matt Pocock — domain-modeling (dependência do grill-with-docs)"
 
-echo "Skills instalados em ~/.claude/skills/. Reinicie o Claude Code."
-echo "Uso: peça pra revisar um plano/design (ex.: 'quero que você me entreviste"
-echo "sobre esse plano antes de implementar', ou invoque a skill grill-me)."
+echo "Skills instalados: ~/.claude/skills/ (Claude Code) e ~/.agents/skills/"
+echo "(diretório padrão de Agent Skills, lido pelo Codex e pelo opencode)."
+echo "Reinicie os agentes. Uso: peça pra revisar um plano/design (ex.: 'quero"
+echo "que você me entreviste sobre esse plano antes de implementar')."
