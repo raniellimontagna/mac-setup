@@ -24,7 +24,7 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   Revise antes e rode com `bash macos-defaults.sh`.
 - **[`editorconfig`](./editorconfig)** — base de `.editorconfig`; copie para a raiz dos seus projetos.
 - **[`clone-org.sh`](./clone-org.sh)** — clona (ou atualiza) todos os repos de uma org do GitHub.
-  Ex.: `bash clone-org.sh attodevlabs ~/Projetos/empresa/atto`. Rodar de novo dá `git pull` nos existentes.
+  Ex.: `bash clone-org.sh minha-org ~/Projetos/empresa/minha-org`. Rodar de novo dá `git pull` nos existentes.
   Estrutura sugerida: `~/Projetos/empresa/<empresa>/<repo>` e `~/Projetos/pessoal/<repo>`.
 - **[`mobile-ios.sh`](./mobile-ios.sh)** — aponta o `xcode-select` para o Xcode, baixa o runtime do
   iOS e cria/inicia um iPhone no Simulator. Precisa de `sudo` (senha) — rode com `bash mobile-ios.sh`.
@@ -85,9 +85,9 @@ Para as dependências instalarem, alguns acessos precisam ser configurados (uma 
 
 - **Módulos Go privados** — o `setup.sh` já configura `git ... insteadOf` (usa SSH). Marque os orgs:
   ```bash
-  go env -w GOPRIVATE="github.com/esperto-sistemas,github.com/quadralize,github.com/attodevlabs,github.com/ZenPush"
+  go env -w GOPRIVATE="github.com/<sua-org-1>,github.com/<sua-org-2>"
   ```
-- **GitHub Packages privado** (`@attodevlabs/*` via pnpm) — precisa de token com escopo `read:packages`:
+- **GitHub Packages privado** (`@<sua-org>/*` via pnpm) — precisa de token com escopo `read:packages`:
   ```bash
   gh auth refresh -h github.com -s read:packages
   printf '//npm.pkg.github.com/:_authToken=%s\n' "$(gh auth token)" >> ~/.npmrc && chmod 600 ~/.npmrc

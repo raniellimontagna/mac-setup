@@ -7,8 +7,8 @@
 #   bash clone-org.sh <org> [pasta-destino]
 #
 # Exemplos:
-#   bash clone-org.sh attodevlabs                      # -> ~/Projetos/empresa/attodevlabs
-#   bash clone-org.sh attodevlabs ~/Projetos/empresa/atto
+#   bash clone-org.sh minha-org                        # -> ~/Projetos/empresa/minha-org
+#   bash clone-org.sh minha-org ~/Projetos/empresa/apelido
 #
 set -euo pipefail
 
