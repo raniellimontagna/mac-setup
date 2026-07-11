@@ -48,6 +48,16 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
   é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).
 
+### Apps instalados manualmente (sem cask)
+
+- **Superset** — ver acima.
+- **Maestri** — canvas multi-agente; instalado pelo site. Time Codex+Grok: `maestri-team-codex-grok.sh`.
+- **Orca** — orquestrador de agentes com acesso remoto pelo celular. Instalado pelo site
+  (o cask `orca` do Homebrew é o do Plotly, deprecated — não é este). Acesso mobile: o app
+  escuta em `0.0.0.0:6768` (websocket com auth token); com **Tailscale** no Mac e no celular
+  (mesma conta), aponte o app mobile para `<ip-tailscale-do-mac>:6768` ou
+  `<hostname>:6768` via MagicDNS e pareie o dispositivo no Orca do Mac.
+
 ## Como usar num Mac novo
 
 ```bash
