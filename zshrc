@@ -94,3 +94,35 @@ fi
 # LM Studio CLI (lms)
 [ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
 
+export PATH="$HOME/.local/bin:$PATH"
+
+# gh multi-conta: lemon dentro de ~/Projetos/empresa/lemon (ou remote
+# lemonenergy/); pessoal em todo o resto. Só shells interativos têm a
+# função — a conta ativa do keyring fica na pessoal como default seguro
+# para sessões não-interativas (scripts, IDEs, agentes).
+gh() {
+  # GITHUB_TOKEN é só pro npm (GitHub Packages); gh usa keyring
+  if [[ "$PWD" == "$HOME/Projetos/empresa/lemon"* ]] \
+    || command git remote get-url origin 2>/dev/null | grep -q "lemonenergy/"; then
+    env -u GITHUB_TOKEN command gh auth switch -u raniellimontagna-lemon >/dev/null 2>&1
+  else
+    env -u GITHUB_TOKEN command gh auth switch -u raniellimontagna >/dev/null 2>&1
+  fi
+  env -u GITHUB_TOKEN command gh "$@"
+}
+
+# GitHub Packages (@lemonenergy) — token do registry privado só existe
+# dentro da pasta lemon; fora dela a env var some para não vazar a conta
+# lemon para ferramentas que honram GITHUB_TOKEN (gh, act, octokit...).
+_lemon_github_token_hook() {
+  if [[ "$PWD" == "$HOME/Projetos/empresa/lemon"* ]]; then
+    if [ -z "${GITHUB_TOKEN:-}" ]; then
+      export GITHUB_TOKEN=$(env -u GITHUB_TOKEN command gh auth token --user raniellimontagna-lemon 2>/dev/null)
+    fi
+  else
+    unset GITHUB_TOKEN
+  fi
+}
+autoload -U add-zsh-hook
+add-zsh-hook chpwd _lemon_github_token_hook
+_lemon_github_token_hook

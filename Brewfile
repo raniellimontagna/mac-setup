@@ -38,6 +38,7 @@ cask "visual-studio-code"   # editor
 cask "ghostty"              # terminal
 cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
+cask "dbeaver-community"    # cliente universal de banco de dados
 cask "tailscale-app"        # VPN mesh (acesso remoto ao servidor de casa)
 cask "ollama-app"           # rodar modelos de IA localmente (LLMs)
 cask "lm-studio"            # GUI para rodar LLMs locais (usa llama.cpp)
