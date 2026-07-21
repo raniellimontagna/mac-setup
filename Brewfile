@@ -49,6 +49,7 @@ cask "keka"                 # extrai e cria arquivos (zip/rar/7z/tar...)
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
 cask "rectangle"            # organizar janelas com atalhos / arrastar pra borda
+cask "obsidian"             # notas em markdown (base de conhecimento local)
 
 # --- Fora de desenvolvimento ---
 cask "spotify"              # música
