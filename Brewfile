@@ -4,6 +4,7 @@
 # --- Ferramentas de linha de comando ---
 brew "git"          # git atualizado (mais novo que o do sistema)
 brew "gh"           # GitHub CLI
+brew "awscli"       # AWS CLI (aws sso login, etc.)
 brew "fnm"          # Fast Node Manager (gerencia versões do Node)
 brew "uv"           # gerenciador de pacotes/venv Python rápido
 brew "python@3.13"  # Python (estável)

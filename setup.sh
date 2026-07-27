@@ -8,6 +8,8 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 info(){ printf "\n\033[1;34m==>\033[0m \033[1m%s\033[0m\n" "$1"; }
+ok(){   printf "\033[1;32m✔\033[0m %s\n" "$1"; }
+warn(){ printf "\033[1;33m⚠\033[0m %s\n" "$1"; }
 
 # --- 1. Xcode Command Line Tools ---
 if ! xcode-select -p >/dev/null 2>&1; then

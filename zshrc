@@ -126,3 +126,7 @@ _lemon_github_token_hook() {
 autoload -U add-zsh-hook
 add-zsh-hook chpwd _lemon_github_token_hook
 _lemon_github_token_hook
+
+# AWS SSO (Lemon) — preenche o account/role que o `lemon auth aws` (lemon-tech-cli) deixa como CONFIGURE_ME
+export LEMON_AWS_ACCOUNT_ID="802790721360"
+export LEMON_AWS_ROLE_NAME="AWSAdministratorAccess"
