@@ -37,6 +37,7 @@ cask "orbstack"             # Docker/containers leve para Apple Silicon
 cask "android-studio"       # IDE + SDK/emulador Android
 cask "visual-studio-code"   # editor
 cask "ghostty"              # terminal
+cask "warp"                 # terminal agêntico (AI, do terminal à cloud)
 cask "google-chrome"        # navegador
 cask "bruno"                # cliente de API (offline, git-friendly)
 cask "dbeaver-community"    # cliente universal de banco de dados
