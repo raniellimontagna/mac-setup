@@ -140,5 +140,9 @@ claude_profile() {
   local nome="$1" dir="${2:-$HOME/.claude-$1}"
   alias "claude-$nome"="CLAUDE_CONFIG_DIR='$dir' claude"
 }
-claude_profile pessoal "$HOME/.claude"   # conta pessoal = config atual (mesma do `claude` puro)
+# `claude` puro = perfil pessoal. Sem este export ele usaria ~/.claude.json
+# (config antiga, na raiz do home) e cairia numa terceira configuração,
+# separada dos dois perfis. Os aliases sobrescrevem a variável na chamada.
+export CLAUDE_CONFIG_DIR="$HOME/.claude"
+claude_profile pessoal "$HOME/.claude"   # explícito; equivale ao `claude` puro
 claude_profile lemon                     # conta de trabalho, isolada em ~/.claude-lemon
