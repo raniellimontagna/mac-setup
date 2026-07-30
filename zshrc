@@ -130,3 +130,15 @@ _lemon_github_token_hook
 # AWS SSO (Lemon) — preenche o account/role que o `lemon auth aws` (lemon-tech-cli) deixa como CONFIGURE_ME
 export LEMON_AWS_ACCOUNT_ID="802790721360"
 export LEMON_AWS_ROLE_NAME="AWSAdministratorAccess"
+
+# Claude Code multi-conta: cada perfil aponta para um CLAUDE_CONFIG_DIR
+# próprio, então config, login, MCPs, skills/plugins e histórico ficam
+# isolados. Para criar um perfil novo basta uma linha `claude_profile <nome>`
+# — vira o comando `claude-<nome>` usando ~/.claude-<nome>. O segundo
+# argumento (opcional) força outro diretório.
+claude_profile() {
+  local nome="$1" dir="${2:-$HOME/.claude-$1}"
+  alias "claude-$nome"="CLAUDE_CONFIG_DIR='$dir' claude"
+}
+claude_profile pessoal "$HOME/.claude"   # conta pessoal = config atual (mesma do `claude` puro)
+claude_profile lemon                     # conta de trabalho, isolada em ~/.claude-lemon
