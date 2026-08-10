@@ -12,6 +12,8 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - Gera uma **chave SSH** (`ed25519`) e o `~/.ssh/config` usando o keychain do macOS
 - Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
   - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
+  - **Perfis do Claude Code** (`claude-pessoal` + um por conta de trabalho) — múltiplas contas com
+    ambientes isolados — veja [Múltiplas contas do Claude Code](#múltiplas-contas-do-claude-code)
 - Configura **gitignore global** ([`gitignore_global`](./gitignore_global)) e **aliases** do git (`st`, `co`, `lg`, `cm`...)
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
 - Instala as **extensões do VS Code** de [`vscode/extensions.txt`](./vscode/extensions.txt)
@@ -45,15 +47,15 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   **grill-with-docs**/**domain-modeling** (mesma entrevista, mas registra glossário em `CONTEXT.md`
   e ADRs em `docs/adr/` no repo conforme as decisões fecham). Idempotente.
 - **[`ai-clis.sh`](./ai-clis.sh)** — instala os CLIs de IA (Claude Code, Codex, Gemini, opencode)
-  pelos canais oficiais. O app **[Superset](https://superset.com)** (hub que agrupa esses agentes)
-  é instalado à parte pelo site — não é o `superset` do Homebrew (aquele é o Apache Superset de BI).
+  pelos canais oficiais. O app **Orca** (IDE/hub que agrupa esses agentes) é instalado à parte
+  pelo site — ver abaixo.
 
 ### Apps instalados manualmente (sem cask)
 
-- **Superset** — ver acima.
 - **Maestri** — canvas multi-agente; instalado pelo site. Time Codex+Grok: `maestri-team-codex-grok.sh`.
-- **Orca** — orquestrador de agentes com acesso remoto pelo celular. Instalado pelo site
-  (o cask `orca` do Homebrew é o do Plotly, deprecated — não é este). Acesso mobile: o app
+- **Orca** — IDE/hub principal que agrupa os agentes de IA (substituiu o Superset), com acesso
+  remoto pelo celular. Instalado pelo site (o cask `orca` do Homebrew é o do Plotly, deprecated
+  — não é este). Acesso mobile: o app
   escuta em `0.0.0.0:6768` (websocket com auth token); com **Tailscale** no Mac e no celular
   (mesma conta), aponte o app mobile para `<ip-tailscale-do-mac>:6768` ou
   `<hostname>:6768` via MagicDNS e pareie o dispositivo no Orca do Mac.
@@ -106,6 +108,53 @@ Duas alavancas que reduzem consumo de token em sessões com agentes (Claude Code
   - **Claude Code:** `claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman` (auto-ativa)
   - **Codex:** `npx skills add JuliusBrussee/caveman -a codex` (ative com `/caveman` uma vez por sessão)
   - Níveis: `/caveman lite` (tira só formalidades) → default → `full` → `ultra`. Comece no `lite`.
+
+## Múltiplas contas do Claude Code
+
+Dá para rodar mais de uma conta na mesma máquina com **ambientes isolados**: cada perfil tem seu
+próprio `CLAUDE_CONFIG_DIR`, ou seja, config, login, servidores MCP, skills/plugins e histórico de
+sessões separados. O [`zshrc`](./zshrc) já traz dois perfis prontos:
+
+| Comando          | `CLAUDE_CONFIG_DIR` | Uso                                              |
+| ---------------- | ------------------- | ------------------------------------------------ |
+| `claude`         | `~/.claude`         | padrão (é a mesma config do `claude-pessoal`)    |
+| `claude-pessoal` | `~/.claude`         | conta pessoal — apelido explícito do padrão      |
+| `claude-<trab>`  | `~/.claude-<trab>`  | conta de trabalho, ambiente totalmente separado  |
+
+O perfil de trabalho só existe se `WORK_PROFILE_NAME` estiver definido em `~/.secrets.zsh` —
+o nome identifica o empregador e este repo é público. Para criar outros, uma linha basta:
+`claude_profile <nome>`.
+
+```bash
+cd ~/Projetos/pessoal/algum-repo && claude-pessoal
+cd ~/Projetos/empresa/<empresa>/algum-repo && claude-<trab>
+```
+
+### Adicionando um perfil novo
+
+Uma linha no [`zshrc`](./zshrc), na seção de multi-conta:
+
+```sh
+claude_profile atto   # cria o comando `claude-atto` usando ~/.claude-atto
+```
+
+O segundo argumento é opcional e força outro diretório (é assim que o `pessoal` reaproveita a
+config padrão):
+
+```sh
+claude_profile pessoal "$HOME/.claude"
+```
+
+Abra um terminal novo (ou `source ~/.zshrc`) e rode `claude-atto`.
+
+> **Na primeira vez de cada perfil isolado** o diretório nasce vazio: faça o login
+> (`claude-atto` → `/login`) e reinstale nele o que precisar — plugins, MCPs e skills **não** são
+> compartilhados entre perfis, é justamente o ponto do isolamento. Os scripts deste repo aceitam
+> o mesmo env var, então dá para reaproveitá-los por perfil:
+>
+> ```bash
+> CLAUDE_CONFIG_DIR=~/.claude-<trab> bash claude-plugins.sh
+> ```
 
 ## Personalizando
 

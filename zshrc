@@ -96,40 +96,60 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# gh multi-conta: lemon dentro de ~/Projetos/empresa/lemon (ou remote
-# lemonenergy/); pessoal em todo o resto. Só shells interativos têm a
-# função — a conta ativa do keyring fica na pessoal como default seguro
-# para sessões não-interativas (scripts, IDEs, agentes).
+# gh multi-conta: dentro da pasta (ou da org) de trabalho usa a conta de
+# trabalho; pessoal em todo o resto. Só shells interativos têm a função — a
+# conta ativa do keyring fica na pessoal como default seguro para sessões
+# não-interativas (scripts, IDEs, agentes).
+#
+# Este repo é PÚBLICO: nome de empresa, org e usuário de trabalho ficam em
+# ~/.secrets.zsh (carregado lá em cima). Defina lá o que se aplicar:
+#
+#   WORK_PROJECT_DIR="$HOME/Projetos/empresa/<empresa>"
+#   WORK_GH_ORG="<org-do-github>"
+#   WORK_GH_USER="<usuario-github-de-trabalho>"
+#   PERSONAL_GH_USER="<usuario-github-pessoal>"
+#
+# Sem essas variáveis nada quebra: tudo cai na conta pessoal.
+
+# Só caminho — barato, roda a cada chpwd.
+_is_work_dir() {
+  [ -n "${WORK_PROJECT_DIR:-}" ] && [[ "$PWD" == "$WORK_PROJECT_DIR"* ]]
+}
+# Caminho OU remote — o `git remote` só vale a pena na chamada do gh.
+_is_work_repo() {
+  _is_work_dir && return 0
+  [ -n "${WORK_GH_ORG:-}" ] \
+    && command git remote get-url origin 2>/dev/null | grep -q "${WORK_GH_ORG}/"
+}
+
 gh() {
   # GITHUB_TOKEN é só pro npm (GitHub Packages); gh usa keyring
-  if [[ "$PWD" == "$HOME/Projetos/empresa/lemon"* ]] \
-    || command git remote get-url origin 2>/dev/null | grep -q "lemonenergy/"; then
-    env -u GITHUB_TOKEN command gh auth switch -u raniellimontagna-lemon >/dev/null 2>&1
-  else
-    env -u GITHUB_TOKEN command gh auth switch -u raniellimontagna >/dev/null 2>&1
+  local _acct="${PERSONAL_GH_USER:-}"
+  if [ -n "${WORK_GH_USER:-}" ] && _is_work_repo; then
+    _acct="$WORK_GH_USER"
   fi
+  [ -n "$_acct" ] && env -u GITHUB_TOKEN command gh auth switch -u "$_acct" >/dev/null 2>&1
   env -u GITHUB_TOKEN command gh "$@"
 }
 
-# GitHub Packages (@lemonenergy) — token do registry privado só existe
-# dentro da pasta lemon; fora dela a env var some para não vazar a conta
-# lemon para ferramentas que honram GITHUB_TOKEN (gh, act, octokit...).
-_lemon_github_token_hook() {
-  if [[ "$PWD" == "$HOME/Projetos/empresa/lemon"* ]]; then
+# GitHub Packages de registry privado — o token só existe dentro da pasta de
+# trabalho; fora dela a env var some para não vazar a conta de trabalho para
+# ferramentas que honram GITHUB_TOKEN (gh, act, octokit...).
+_work_github_token_hook() {
+  if [ -n "${WORK_GH_USER:-}" ] && _is_work_dir; then
     if [ -z "${GITHUB_TOKEN:-}" ]; then
-      export GITHUB_TOKEN=$(env -u GITHUB_TOKEN command gh auth token --user raniellimontagna-lemon 2>/dev/null)
+      export GITHUB_TOKEN=$(env -u GITHUB_TOKEN command gh auth token --user "$WORK_GH_USER" 2>/dev/null)
     fi
   else
     unset GITHUB_TOKEN
   fi
 }
 autoload -U add-zsh-hook
-add-zsh-hook chpwd _lemon_github_token_hook
-_lemon_github_token_hook
+add-zsh-hook chpwd _work_github_token_hook
+_work_github_token_hook
 
-# AWS SSO (Lemon) — preenche o account/role que o `lemon auth aws` (lemon-tech-cli) deixa como CONFIGURE_ME
-export LEMON_AWS_ACCOUNT_ID="802790721360"
-export LEMON_AWS_ROLE_NAME="AWSAdministratorAccess"
+# AWS SSO do trabalho: os nomes das variáveis são específicos do CLI interno do
+# empregador e os valores identificam a conta — os dois ficam em ~/.secrets.zsh.
 
 # Claude Code multi-conta: cada perfil aponta para um CLAUDE_CONFIG_DIR
 # próprio, então config, login, MCPs, skills/plugins e histórico ficam
@@ -145,4 +165,17 @@ claude_profile() {
 # separada dos dois perfis. Os aliases sobrescrevem a variável na chamada.
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 claude_profile pessoal "$HOME/.claude"   # explícito; equivale ao `claude` puro
-claude_profile lemon                     # conta de trabalho, isolada em ~/.claude-lemon
+# Perfil de trabalho: o nome vem de ~/.secrets.zsh (WORK_PROFILE_NAME), porque
+# identifica o empregador e este repo é público. Vira `claude-<nome>`.
+[ -n "${WORK_PROFILE_NAME:-}" ] && claude_profile "$WORK_PROFILE_NAME"
+
+# Codex CLI multi-conta: mesmo padrão do claude_profile, só que via CODEX_HOME
+# (config.toml, auth.json, sessions e histórico ficam dentro do diretório).
+# `codex_profile <nome>` vira o comando `codex-<nome>` usando ~/.codex-<nome>.
+codex_profile() {
+  local nome="$1" dir="${2:-$HOME/.codex-$1}"
+  alias "codex-$nome"="CODEX_HOME='$dir' codex"
+}
+export CODEX_HOME="$HOME/.codex"
+codex_profile pessoal "$HOME/.codex"     # explícito; equivale ao `codex` puro
+codex_profile gui                        # conta do Gui, isolada em ~/.codex-gui
