@@ -168,6 +168,29 @@ claude_profile pessoal "$HOME/.claude"   # explícito; equivale ao `claude` puro
 # Perfil de trabalho: o nome vem de ~/.secrets.zsh (WORK_PROFILE_NAME), porque
 # identifica o empregador e este repo é público. Vira `claude-<nome>`.
 [ -n "${WORK_PROFILE_NAME:-}" ] && claude_profile "$WORK_PROFILE_NAME"
+# `claude-seek` = Claude Code falando com a API compatível Anthropic do DeepSeek.
+# Perfil isolado em ~/.claude-seek e variáveis só no escopo da chamada, então o
+# `claude` normal não é afetado. A chave mora no Keychain (serviço deepseek-api-key)
+# e só é lida quando o comando roda.
+claude-seek() {
+  local key
+  key=$(security find-generic-password -s deepseek-api-key -w 2>/dev/null) || {
+    echo "claude-seek: chave ausente no Keychain (serviço deepseek-api-key)" >&2
+    return 1
+  }
+  CLAUDE_CONFIG_DIR="$HOME/.claude-seek" \
+  ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic" \
+  ANTHROPIC_AUTH_TOKEN="$key" \
+  ANTHROPIC_MODEL="deepseek-flash[1m]" \
+  ANTHROPIC_DEFAULT_FABLE_MODEL="deepseek-v4-pro[1m]" \
+  ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-flash[1m]" \
+  ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-flash[1m]" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-flash" \
+  CLAUDE_CODE_SUBAGENT_MODEL="deepseek-flash" \
+  CLAUDE_CODE_EFFORT_LEVEL="max" \
+  CLAUDE_CODE_AUTO_COMPACT_WINDOW="786432" \
+  claude "$@"
+}
 
 # Codex CLI multi-conta: mesmo padrão do claude_profile, só que via CODEX_HOME
 # (config.toml, auth.json, sessions e histórico ficam dentro do diretório).
