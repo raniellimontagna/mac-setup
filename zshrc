@@ -168,6 +168,24 @@ claude_profile pessoal "$HOME/.claude"   # explícito; equivale ao `claude` puro
 # Perfil de trabalho: o nome vem de ~/.secrets.zsh (WORK_PROFILE_NAME), porque
 # identifica o empregador e este repo é público. Vira `claude-<nome>`.
 [ -n "${WORK_PROFILE_NAME:-}" ] && claude_profile "$WORK_PROFILE_NAME"
+# Contas extras do pessoal para rotacionar quando bate limite. Cada uma tem
+# login próprio (.claude.json/.credentials.json no seu dir), mas config,
+# skills, plugins, hooks e projects/ são symlinks para ~/.claude — então
+# `claude-<nome> --continue` retoma a mesma sessão que estava no pessoal.
+claude_profile_shared() {
+  local nome="$1" dir="$HOME/.claude-$1" item
+  mkdir -p "$dir"
+  for item in CLAUDE.md RTK.md settings.json agents skills plugins hooks scripts projects; do
+    [ -e "$HOME/.claude/$item" ] && [ ! -e "$dir/$item" ] && ln -s "$HOME/.claude/$item" "$dir/$item"
+  done
+  # MCPs de usuário moram no .claude.json (junto do login): copia só na criação.
+  [ ! -e "$dir/.claude.json" ] && command -v jq >/dev/null &&
+    jq '{mcpServers}' "$HOME/.claude/.claude.json" > "$dir/.claude.json" 2>/dev/null &&
+    chmod 600 "$dir/.claude.json"
+  claude_profile "$nome"
+}
+claude_profile_shared contato
+claude_profile_shared ranielli
 # `claude-seek` = Claude Code falando com a API compatível Anthropic do DeepSeek.
 # Perfil isolado em ~/.claude-seek e variáveis só no escopo da chamada, então o
 # `claude` normal não é afetado. A chave mora no Keychain (serviço deepseek-api-key)
