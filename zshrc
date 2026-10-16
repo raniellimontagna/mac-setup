@@ -186,6 +186,7 @@ claude_profile_shared() {
 }
 claude_profile_shared contato
 claude_profile_shared ranielli
+claude_profile_shared orca   # conta dedicada da VM orca-dev, também usável no Mac
 # `claude-seek` = Claude Code falando com a API compatível Anthropic do DeepSeek.
 # Perfil isolado em ~/.claude-seek e variáveis só no escopo da chamada, então o
 # `claude` normal não é afetado. A chave mora no Keychain (serviço deepseek-api-key)
