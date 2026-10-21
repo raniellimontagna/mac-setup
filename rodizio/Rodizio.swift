@@ -11,112 +11,17 @@
 // cheia" ficam num lugar só (o script). Atualiza quando o claude-auto grava
 // algo em ~/.local/state/claude-auto e a cada 30 s, para os resets que passam
 // sozinhos. Avisa (notificação) quando uma conta enche, libera ou quando o
-// claude-auto troca de conta.
+// claude-auto troca de conta. Grava o retrato para os widgets (Widget.swift)
+// e pede para eles redesenharem quando algo importante muda.
 //
 // Build: rodizio/build.sh. Prévias sem a barra de menus:
-//   Rodizio --snapshot paineis.png   |   Rodizio --icon icone-1024.png
+//   Rodizio --snapshot paineis.png | --widgets widgets.png | --icon icone-1024.png
 
 import AppKit
 import Combine
 import SwiftUI
 import UserNotifications
-
-// MARK: - Modelo (espelha `claude-auto status --json`)
-
-struct UsageWindow: Decodable {
-    let used_percentage: Double
-    let resets_at: Double
-}
-
-struct RateLimits: Decodable {
-    let five_hour: UsageWindow?
-    let seven_day: UsageWindow?
-}
-
-struct Usage: Decodable {
-    let rate_limits: RateLimits?
-    let updated_at: Double?
-}
-
-struct AccountInfo: Decodable {
-    let email: String?
-    let name: String?
-}
-
-struct Account: Decodable, Identifiable {
-    let name: String
-    let exists: Bool
-    let in_use: Int
-    let free_at: Double
-    let usage: Usage?
-    let account: AccountInfo?
-
-    var id: String { name }
-    var title: String { name.prefix(1).uppercased() + name.dropFirst() }
-    var initial: String { String(name.prefix(1)).uppercased() }
-    var loggedIn: Bool { exists && account?.email != nil }
-
-    /// Janela só conta enquanto o reset não passou (depois disso zerou).
-    func window(_ kp: KeyPath<RateLimits, UsageWindow?>, now: Date) -> UsageWindow? {
-        guard let w = usage?.rate_limits?[keyPath: kp], w.resets_at > now.timeIntervalSince1970 else { return nil }
-        return w
-    }
-
-    /// Uso da janela mais cheia (5h ou 7d).
-    func peak(now: Date) -> Double? {
-        [window(\.five_hour, now: now), window(\.seven_day, now: now)].compactMap { $0?.used_percentage }.max()
-    }
-
-    func isFull(now: Date) -> Bool { free_at > now.timeIntervalSince1970 }
-    func hasRoom(now: Date) -> Bool { loggedIn && !isFull(now: now) }
-
-    /// A statusline gravou há pouco: alguma sessão (com ou sem wrapper) está usando.
-    func recentlyActive(now: Date) -> Bool {
-        guard let t = usage?.updated_at else { return false }
-        return now.timeIntervalSince1970 - t < 300
-    }
-
-    func state(now: Date) -> AccountState {
-        if !exists { return .missing }
-        if account?.email == nil { return .loggedOut }
-        if isFull(now: now) { return .full(until: free_at) }
-        if in_use > 0 { return .inUse(in_use) }
-        if recentlyActive(now: now) { return .active }
-        return .free
-    }
-}
-
-enum AccountState: Equatable {
-    case missing, loggedOut, full(until: Double), inUse(Int), active, free
-}
-
-struct Snapshot: Decodable {
-    let threshold: Double
-    let next: String?
-    let accounts: [Account]
-
-    func freeCount(now: Date) -> Int { accounts.filter { $0.hasRoom(now: now) }.count }
-
-    /// Conta do bloco da barra: a que está em uso; senão a que usou por
-    /// último; senão a próxima da fila.
-    func focus(now: Date) -> Account? {
-        if let a = accounts.first(where: { $0.in_use > 0 }) { return a }
-        let recent = accounts.filter { $0.recentlyActive(now: now) }
-            .max { ($0.usage?.updated_at ?? 0) < ($1.usage?.updated_at ?? 0) }
-        return recent ?? accounts.first { $0.name == next }
-    }
-
-    /// Conta cheia que libera primeiro.
-    func firstToFree(now: Date) -> Account? {
-        accounts.filter { $0.loggedIn && $0.isFull(now: now) }.min { $0.free_at < $1.free_at }
-    }
-}
-
-/// Ponto do histórico: uso da janela de 5h num instante.
-struct Sample: Codable {
-    let t: Double
-    let p: Double
-}
+import WidgetKit
 
 // MARK: - Fonte de dados
 
@@ -140,6 +45,9 @@ final class Store: ObservableObject {
     private var sources: [DispatchSourceFileSystemObject] = []
     private var pending: DispatchWorkItem?
     private var started = false
+    private var widgetData: Data?
+    private var widgetSignature = ""
+    private var widgetReloadedAt = Date.distantPast
 
     init() { loadHistory() }
 
@@ -185,21 +93,50 @@ final class Store: ObservableObject {
             snapshot = new
             error = nil
             record(new)
+            if started { publishWidget(new) }
             onUpdate?(old, before, new, now)
         } catch {
             self.error = "resposta inesperada do claude-auto: \(error.localizedDescription)"
         }
     }
 
-    // Histórico de 24 h da janela de 5h: grava quando o uso muda 1 ponto ou a
-    // cada 10 min, para a linha ter forma sem encher o arquivo.
+    /// Grava o arquivo que o widget lê. Redesenhar o widget gasta cota do
+    /// sistema, então só pede na hora quando muda o que ele mostra de relance
+    /// (folga, conta em uso, próxima, faixa de 5 pontos de uso); o resto, no
+    /// máximo a cada 10 min.
+    private func publishWidget(_ snap: Snapshot) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        guard let data = try? encoder.encode(WidgetPayload(snapshot: snap, history: history)), data != widgetData else { return }
+        widgetData = data
+        try? FileManager.default.createDirectory(at: WidgetPayload.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? data.write(to: WidgetPayload.url, options: .atomic)
+
+        let signature = (snap.next ?? "-") + snap.accounts.map { a in
+            "\(a.name):\(a.hasRoom(now: now)):\(a.in_use > 0):\(Int((a.peak(now: now) ?? 0) / 5))"
+        }.joined(separator: ",")
+        if signature != widgetSignature || now.timeIntervalSince(widgetReloadedAt) > 600 {
+            widgetSignature = signature
+            widgetReloadedAt = now
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    // Histórico de 24 h da janela de 5h: grava quando o uso muda 2 pontos ou a
+    // cada 10 min, para a linha ter forma sem encher o arquivo. Dentro de uma
+    // janela o uso só sobe; uma queda pequena é leitura atrasada de outra sessão
+    // na mesma conta (70, 71, 70…) e vira ruído na linha, então é ignorada.
+    // Queda grande é reset da janela e entra.
     private func record(_ snap: Snapshot) {
         let t = now.timeIntervalSince1970
         var changed = false
         for a in snap.accounts where a.loggedIn {
-            let p = a.window(\.five_hour, now: now)?.used_percentage ?? 0
+            var p = a.window(\.five_hour, now: now)?.used_percentage ?? 0
             var list = history[a.name] ?? []
-            if let last = list.last, abs(last.p - p) < 1, t - last.t < 600 { continue }
+            if let last = list.last {
+                if p < last.p, p > last.p - 10 { p = last.p }
+                if abs(last.p - p) < 2, t - last.t < 600 { continue }
+            }
             list.append(Sample(t: t, p: p))
             list.removeAll { $0.t < t - 86_400 }
             history[a.name] = list
@@ -348,80 +285,14 @@ enum Notifier {
 
 // MARK: - Marca
 
-extension Color {
-    init(hex: UInt32) {
-        self.init(red: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
-    }
-
-    /// Brasa: a cor do Claude, das ações e da marca.
-    static let brasa = Color(hex: 0xD97757)
-    /// Brasa mais clara, para texto e contorno no modo escuro.
-    static let brasaClara = Color(hex: 0xF0A27F)
-    static let carvao = Color(hex: 0x1C1613)
-    /// Conta com folga.
-    static let folga = Color(hex: 0x2EC4A6)
-    static let alerta = Color(hex: 0xF2B544)
-    static let cheia = Color(hex: 0xE5484D)
-}
-
 extension NSColor {
     static let folga = NSColor(Color.folga)
     static let alerta = NSColor(Color.alerta)
     static let cheia = NSColor(Color.cheia)
 }
 
-func usageTint(_ pct: Double, threshold: Double) -> Color {
-    pct >= threshold ? .cheia : pct >= 70 ? .alerta : .folga
-}
-
 func usageNSTint(_ pct: Double, threshold: Double) -> NSColor {
     pct >= threshold ? .cheia : pct >= 70 ? .alerta : .folga
-}
-
-let ptBR = Locale(identifier: "pt_BR")
-
-func timeText(_ epoch: Double, now: Date) -> String {
-    let date = Date(timeIntervalSince1970: epoch)
-    let f = DateFormatter()
-    f.locale = ptBR
-    f.dateFormat = Calendar.current.isDate(date, inSameDayAs: now) ? "HH:mm" : "EEE HH:mm"
-    return f.string(from: date)
-}
-
-func agoText(_ epoch: Double?, now: Date) -> String {
-    guard let epoch else { return "sem uso registrado" }
-    let min = Int((now.timeIntervalSince1970 - epoch) / 60)
-    if min < 1 { return "usada agora" }
-    if min < 60 { return "usada há \(min) min" }
-    if min < 60 * 48 { return "usada há \(min / 60) h" }
-    return "usada há \(min / 1440) dias"
-}
-
-/// O espeto da marca: quatro pedaços, um por conta, nas cores do uso.
-struct Skewer: View {
-    let size: CGFloat
-    var colors: [Color] = [.folga, .alerta, .brasa, .cheia]
-    /// Palito: creme sobre o carvão do ícone; nos painéis, a cor do texto.
-    var rod = Color(hex: 0xF1E4D3)
-
-    var body: some View {
-        ZStack {
-            Capsule().fill(rod).frame(width: size * 0.84, height: size * 0.032)
-            Circle().stroke(rod, lineWidth: size * 0.026)
-                .frame(width: size * 0.1, height: size * 0.1)
-                .offset(x: -size * 0.47)
-            HStack(spacing: size * 0.035) {
-                ForEach(Array(colors.enumerated()), id: \.offset) { _, c in
-                    RoundedRectangle(cornerRadius: size * 0.045, style: .continuous)
-                        .fill(c)
-                        .frame(width: size * 0.13, height: size * 0.22)
-                        .shadow(color: .black.opacity(0.25), radius: size * 0.012, y: size * 0.01)
-                }
-            }
-            .offset(x: size * 0.05)
-        }
-        .rotationEffect(.degrees(-28))
-    }
 }
 
 /// Ícone do app: espeto sobre carvão, com a brasa embaixo.
@@ -623,46 +494,11 @@ enum MenuBarArt {
     }
 }
 
-func stateText(_ s: AccountState, now: Date) -> String {
-    switch s {
-    case .missing: "sem perfil"
-    case .loggedOut: "sem login"
-    case .full(let until): "cheia até \(timeText(until, now: now))"
-    case .inUse(let n): n > 1 ? "em uso ×\(n)" : "em uso"
-    case .active: "ativa"
-    case .free: "livre"
-    }
-}
-
-func stateColor(_ s: AccountState) -> Color {
-    switch s {
-    case .missing, .loggedOut: .gray
-    case .full: .cheia
-    case .inUse, .active: .brasa
-    case .free: .folga
-    }
-}
-
 // MARK: - Painel
 
 @MainActor
 final class PanelUI: ObservableObject {
     @Published var showingSettings = false
-}
-
-struct Bar: View {
-    let fraction: Double
-    let tint: Color
-
-    var body: some View {
-        GeometryReader { g in
-            ZStack(alignment: .leading) {
-                Capsule().fill(.quaternary)
-                Capsule().fill(tint).frame(width: max(g.size.width * min(fraction, 1), 5))
-            }
-        }
-        .frame(height: 6)
-    }
 }
 
 /// Linha de uma janela de uso: rótulo, barra, % e horário de reset.
@@ -689,38 +525,6 @@ struct WindowLine: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 74, alignment: .trailing)
         }
-    }
-}
-
-/// Uso da janela de 5h nas últimas 24 h.
-struct Sparkline: View {
-    let samples: [Sample]
-    let now: Date
-    let tint: Color
-
-    var body: some View {
-        GeometryReader { g in
-            let start = now.timeIntervalSince1970 - 86_400
-            let pts = samples.map { s in
-                CGPoint(x: max(0, (s.t - start) / 86_400) * g.size.width,
-                        y: g.size.height - CGFloat(min(s.p, 100) / 100) * g.size.height)
-            } + [CGPoint(x: g.size.width, y: g.size.height - CGFloat(min(samples.last?.p ?? 0, 100) / 100) * g.size.height)]
-            ZStack {
-                Path { p in
-                    p.move(to: CGPoint(x: pts[0].x, y: g.size.height))
-                    pts.forEach { p.addLine(to: $0) }
-                    p.addLine(to: CGPoint(x: g.size.width, y: g.size.height))
-                    p.closeSubpath()
-                }
-                .fill(LinearGradient(colors: [tint.opacity(0.28), tint.opacity(0.02)], startPoint: .top, endPoint: .bottom))
-                Path { p in
-                    p.move(to: pts[0])
-                    pts.dropFirst().forEach { p.addLine(to: $0) }
-                }
-                .stroke(tint, style: StrokeStyle(lineWidth: 1.2, lineJoin: .round))
-            }
-        }
-        .frame(height: 16)
     }
 }
 
@@ -776,7 +580,7 @@ struct AccountModule: View {
             if let seven = account.window(\.seven_day, now: now) {
                 WindowLine(label: "7d", window: seven, threshold: snap.threshold, now: now)
             }
-            if samples.count >= 2 {
+            if hasTrend(samples) {
                 HStack(alignment: .bottom, spacing: 7) {
                     Text("24h")
                         .font(.system(size: 9, weight: .semibold, design: .rounded))
@@ -790,7 +594,7 @@ struct AccountModule: View {
                         .frame(width: 104, alignment: .trailing)
                 }
             } else if account.loggedIn {
-                Text(agoText(account.usage?.updated_at, now: now) + " · o histórico de 24h começa agora")
+                Text(agoText(account.usage?.updated_at, now: now) + " · a linha de 24h aparece com 1h de histórico")
                     .font(.system(size: 9)).foregroundStyle(.tertiary)
             }
             if interactive, case .full = state {
@@ -1054,8 +858,9 @@ final class StatusController: NSObject, NSWindowDelegate {
 
     @objc private func toggle() { panel.isVisible ? close() : show() }
 
-    private func show() {
-        guard let button = item.button, let buttonWindow = button.window else { return }
+    /// Também chamado pelo clique no widget (rodizio://abrir).
+    func show() {
+        guard !panel.isVisible, let button = item.button, let buttonWindow = button.window else { return }
         store.refresh()
         let size = fittingSize()
         // Centralizado sob o ícone, sem sair da tela.
@@ -1106,7 +911,7 @@ final class StatusController: NSObject, NSWindowDelegate {
     func windowDidResignKey(_ notification: Notification) { close() }
 }
 
-// MARK: - Prévias (--snapshot, --icon)
+// MARK: - Prévias (--snapshot, --widgets, --icon)
 
 @MainActor
 enum Previews {
@@ -1158,6 +963,40 @@ enum Previews {
         write(view, to: path, scale: 2)
     }
 
+    /// Widgets pequeno, médio e grande, nos temas escuro e claro, com os dados de agora.
+    static func widgets(to path: String) {
+        let store = Store()
+        store.refreshNow()
+        guard let snap = store.snapshot else {
+            FileHandle.standardError.write(Data("sem dados do claude-auto\n".utf8))
+            exit(1)
+        }
+        let payload = WidgetPayload(snapshot: snap, history: store.history)
+        let now = store.now
+        // Tamanhos dos widgets do macOS, com a margem que o sistema põe em volta.
+        func tile(_ v: some View, _ w: CGFloat, _ h: CGFloat, dark: Bool) -> some View {
+            v.padding(16)
+                .frame(width: w, height: h)
+                .background(WidgetBackground())
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .environment(\.colorScheme, dark ? .dark : .light)
+        }
+        let view = HStack(alignment: .top, spacing: 18) {
+            ForEach([true, false], id: \.self) { dark in
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(alignment: .top, spacing: 18) {
+                        tile(SmallWidgetView(payload: payload, now: now), 170, 170, dark: dark)
+                        tile(MediumWidgetView(payload: payload, now: now), 364, 170, dark: dark)
+                    }
+                    tile(LargeWidgetView(payload: payload, now: now), 364, 382, dark: dark)
+                }
+            }
+        }
+        .padding(24)
+        .background(Color(hex: 0x6B7280))
+        write(view, to: path, scale: 2)
+    }
+
     /// Ícone do app em 1024 px, já com a margem e a sombra do grid do macOS.
     static func icon(to path: String) {
         let view = BrandMark(size: 824)
@@ -1179,6 +1018,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Previews.panels(to: args[i + 1])
             exit(0)
         }
+        if let i = args.firstIndex(of: "--widgets"), i + 1 < args.count {
+            Previews.widgets(to: args[i + 1])
+            exit(0)
+        }
         if let i = args.firstIndex(of: "--icon"), i + 1 < args.count {
             Previews.icon(to: args[i + 1])
             exit(0)
@@ -1196,5 +1039,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         status = StatusController(store: store, prefs: .shared)
         store.start()
         if Prefs.shared.notify { Notifier.requestAuthorization() }
+    }
+
+    /// Clique no widget (rodizio://abrir): abre o painel.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        status?.show()
     }
 }

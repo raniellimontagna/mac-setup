@@ -216,6 +216,20 @@ com o próximo espeto, e cada conta é um pedaço do espeto.
     HH:MM), mais o botão **Liberar agora** quando a conta está bloqueada.
 - **Avisos:** notificação quando uma conta enche, quando libera e quando o `claude-auto` passa a
   sessão para outra conta.
+- **Widgets** (Central de Notificações ou mesa: **Editar Widgets…** → *Rodízio*):
+  - **pequeno:** quantas contas têm folga (`3/4`), uma coluna por conta e a próxima da fila;
+  - **médio:** o mesmo resumo e uma linha por conta, com a barra e o % (ou "até HH:MM" se cheia);
+  - **grande:** o resumo e um cartão por conta, com e-mail, estado, barra, linha do histórico e
+    horário em que a janela zera.
+
+  Clicar no widget abre o painel. O app grava o retrato em
+  `~/Library/Application Support/Rodizio/widget.json` e pede para o widget redesenhar quando muda
+  algo que se vê de relance (folga, conta em uso, próxima, faixa de 5 pontos de uso); o widget também
+  vira sozinho quando uma conta libera ou uma janela zera, e no máximo a cada 15 min. Sem certificado
+  de desenvolvedor, o widget é assinado ad-hoc e lê esse arquivo por uma exceção só de leitura do
+  sandbox (o App Group, que o Disco usa, exige certificado). Se ele não aparecer na galeria, adicione
+  uma Apple ID em Xcode → Settings → Accounts e rode o `build.sh` de novo: ele assina com o
+  certificado "Apple Development" quando existe um.
 - **Ajustes** (engrenagem no painel): o que aparece na barra, com prévia; avisos; **Abrir junto
   com o Mac**.
 
@@ -224,11 +238,11 @@ Os dados vêm de `claude-auto status --json`; o app atualiza quando o claude-aut
 `~/Library/Application Support/Rodizio/history.json`. Precisa do Xcode.
 
 ```bash
-bash rodizio/build.sh   # compila, gera o ícone, instala em ~/Applications e abre no login (LaunchAgent)
+bash rodizio/build.sh   # compila app e widget, gera o ícone, instala em ~/Applications e abre no login
 ```
 
 Para conferir o visual sem a barra: `~/Applications/Rodizio.app/Contents/MacOS/Rodizio --snapshot
-paineis.png` (e `--icon icone.png`). "Sair" no painel fecha até o próximo login. Para remover de vez:
+paineis.png` (e `--widgets widgets.png`, `--icon icone.png`). "Sair" no painel fecha até o próximo login. Para remover de vez:
 `launchctl bootout gui/$(id -u)/com.rannimontagna.rodizio` e apague o `.plist` em
 `~/Library/LaunchAgents` e o app em `~/Applications`.
 
