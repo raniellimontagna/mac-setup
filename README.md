@@ -197,6 +197,25 @@ Limitações:
 - Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
   `claude-auto doctor` acusa e `claude-auto install` religa.
 
+#### Cotas na barra de menu (`ClaudeAutoBar`)
+
+App nativo (SwiftUI) em [`claude-auto-bar/`](./claude-auto-bar), no estilo do Stats: uma mini barra
+por conta na barra de menu (verde < 70%, laranja, vermelho a partir do limiar) e o percentual da conta
+em uso. O clique abre um painel com, por conta: e-mail logado, uso de 5h e 7d com horário de reset,
+estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), qual é a próxima da fila e um botão
+para liberar uma conta bloqueada.
+
+Os dados vêm de `claude-auto status --json`; o app atualiza quando o claude-auto grava algo em
+`~/.local/state/claude-auto` e a cada 30 s. Precisa do Xcode.
+
+```bash
+bash claude-auto-bar/build.sh   # compila, instala em ~/Applications e abre no login (LaunchAgent)
+```
+
+"Sair" no painel fecha até o próximo login. Para remover de vez:
+`launchctl bootout gui/$(id -u)/com.rannimontagna.claude-auto-bar` e apague o `.plist` em
+`~/Library/LaunchAgents` e o app em `~/Applications`.
+
 ## Personalizando
 
 - **Apps/pacotes**: edite o [`Brewfile`](./Brewfile) e rode `brew bundle`
