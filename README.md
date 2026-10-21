@@ -13,7 +13,8 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
   - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
   - **Perfis do Claude Code** (`claude-pessoal` + um por conta de trabalho) — múltiplas contas com
-    ambientes isolados, e `claude-auto` para trocar de conta sozinho quando uma bate o limite —
+    ambientes isolados, `claude-auto` para trocar de conta sozinho quando uma bate o limite e o
+    Rodízio para acompanhar as cotas na barra de menus —
     veja [Múltiplas contas do Claude Code](#múltiplas-contas-do-claude-code)
 - Configura **gitignore global** ([`gitignore_global`](./gitignore_global)) e **aliases** do git (`st`, `co`, `lg`, `cm`...)
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
@@ -197,23 +198,38 @@ Limitações:
 - Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
   `claude-auto doctor` acusa e `claude-auto install` religa.
 
-#### Cotas na barra de menu (`ClaudeAutoBar`)
+#### Rodízio: as contas na barra de menus
 
-App nativo (SwiftUI) em [`claude-auto-bar/`](./claude-auto-bar), no estilo do Stats: uma mini barra
-por conta na barra de menu (verde < 70%, laranja, vermelho a partir do limiar) e o percentual da conta
-em uso. O clique abre um painel com, por conta: e-mail logado, uso de 5h e 7d com horário de reset,
-estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), qual é a próxima da fila e um botão
-para liberar uma conta bloqueada.
+*Passa a próxima.* O [Rodízio](./rodizio) é o par visual do `claude-auto`, um app nativo (SwiftUI) no
+estilo do [Disco](https://github.com/RogerBrusamarello/disco-macos): o nome vem do garçom que passa
+com o próximo espeto, e cada conta é um pedaço do espeto.
+
+- **Barra de menus:** um espeto em traço de sistema, com um pedaço por conta: **cheio** é conta com
+  folga, **vazado** é conta cheia. Ao lado, o bloco com a conta em uso e o percentual dela
+  (`P · 5H` / `36%`), de largura fixa para o ícone não pular. As mini barras coloridas por conta
+  (verde, amarelo, vermelho a partir do limiar) ligam nos Ajustes. Passando o mouse, aparece o resumo
+  de todas as contas.
+- **Painel** (clique no espeto), de vidro e em módulos, como a Central de Controle:
+  - resumo: quantas contas têm folga, qual é a próxima da fila e qual cheia libera primeiro;
+  - um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, o
+    histórico das últimas 24 h e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até
+    HH:MM), mais o botão **Liberar agora** quando a conta está bloqueada.
+- **Avisos:** notificação quando uma conta enche, quando libera e quando o `claude-auto` passa a
+  sessão para outra conta.
+- **Ajustes** (engrenagem no painel): o que aparece na barra, com prévia; avisos; **Abrir junto
+  com o Mac**.
 
 Os dados vêm de `claude-auto status --json`; o app atualiza quando o claude-auto grava algo em
-`~/.local/state/claude-auto` e a cada 30 s. Precisa do Xcode.
+`~/.local/state/claude-auto` e a cada 30 s. O histórico fica em
+`~/Library/Application Support/Rodizio/history.json`. Precisa do Xcode.
 
 ```bash
-bash claude-auto-bar/build.sh   # compila, instala em ~/Applications e abre no login (LaunchAgent)
+bash rodizio/build.sh   # compila, gera o ícone, instala em ~/Applications e abre no login (LaunchAgent)
 ```
 
-"Sair" no painel fecha até o próximo login. Para remover de vez:
-`launchctl bootout gui/$(id -u)/com.rannimontagna.claude-auto-bar` e apague o `.plist` em
+Para conferir o visual sem a barra: `~/Applications/Rodizio.app/Contents/MacOS/Rodizio --snapshot
+paineis.png` (e `--icon icone.png`). "Sair" no painel fecha até o próximo login. Para remover de vez:
+`launchctl bootout gui/$(id -u)/com.rannimontagna.rodizio` e apague o `.plist` em
 `~/Library/LaunchAgents` e o app em `~/Applications`.
 
 ## Personalizando
