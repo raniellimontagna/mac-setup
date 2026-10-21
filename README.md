@@ -13,7 +13,8 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
 - Instala o [`.zshrc`](./zshrc), o [`starship.toml`](./starship.toml) e a [config do Ghostty](./ghostty-config) como symlinks
   - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
   - **Perfis do Claude Code** (`claude-pessoal` + um por conta de trabalho) — múltiplas contas com
-    ambientes isolados — veja [Múltiplas contas do Claude Code](#múltiplas-contas-do-claude-code)
+    ambientes isolados, e `claude-auto` para trocar de conta sozinho quando uma bate o limite —
+    veja [Múltiplas contas do Claude Code](#múltiplas-contas-do-claude-code)
 - Configura **gitignore global** ([`gitignore_global`](./gitignore_global)) e **aliases** do git (`st`, `co`, `lg`, `cm`...)
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
 - Instala as **extensões do VS Code** de [`vscode/extensions.txt`](./vscode/extensions.txt)
@@ -155,6 +156,46 @@ Abra um terminal novo (ou `source ~/.zshrc`) e rode `claude-atto`.
 > ```bash
 > CLAUDE_CONFIG_DIR=~/.claude-<trab> bash claude-plugins.sh
 > ```
+
+### Contas extras para rotacionar (`claude_profile_shared`)
+
+Quando as assinaturas são da mesma pessoa, o perfil extra não precisa ser isolado:
+`claude_profile_shared <nome>` cria `~/.claude-<nome>` com login próprio, mas com `settings.json`,
+skills, plugins, hooks e `projects/` como symlinks para o `~/.claude`. Como as sessões moram em
+`projects/`, qualquer conta retoma a mesma conversa (`claude-<nome> --continue`).
+
+### Troca automática de conta (`claude-auto`)
+
+O [`claude-auto`](./claude-auto) roda o Claude Code passando de conta em conta quando uma bate o
+limite, sem perder a sessão:
+
+- **No limite**: quando a resposta falha com `rate_limit`, o hook `StopFailure` marca a conta como
+  cheia até o reset e fecha o claude; o `claude-auto` reabre a mesma sessão (`--resume`) na próxima
+  conta da fila, com uma mensagem pedindo para continuar de onde parou.
+- **Antes do limite**: a statusline grava o uso (janelas de 5h e 7d) de cada conta; no fim de cada
+  turno (hook `Stop`), se a conta passou de 95% e existe outra com folga, a troca acontece antes de
+  uma resposta falhar no meio.
+
+Fila padrão: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILES`; o limiar, com
+`CLAUDE_AUTO_THRESHOLD`). O `setup.sh` linka o script em `~/.local/bin`.
+
+```bash
+claude-auto install          # uma vez: liga os hooks e encadeia a statusline no ~/.claude/settings.json
+claude-auto                  # no lugar do `claude`; aceita as mesmas flags (ex.: claude-auto --continue)
+claude-auto status           # uso conhecido e quando cada conta libera
+claude-auto unblock <conta>  # libera uma conta marcada como cheia
+claude-auto doctor           # confere hooks, statusline e perfis
+```
+
+Limitações:
+
+- Só o CLI no terminal. O app desktop tem login próprio e fica de fora.
+- A troca reinicia o processo: o cache de prompt começa frio na conta nova (a primeira resposta
+  gasta mais) e tarefas em background daquele turno se perdem.
+- O prompt posicional (`claude-auto "faz X"`) só vai no primeiro launch; as retomadas não o reenviam.
+- `--print` não é suportado: não há sessão interativa para retomar.
+- Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
+  `claude-auto doctor` acusa e `claude-auto install` religa.
 
 ## Personalizando
 

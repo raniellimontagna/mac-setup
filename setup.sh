@@ -101,6 +101,9 @@ ln -sf "$DIR/gitignore_global" "$HOME/.gitignore_global"
 mkdir -p "$HOME/.config" "$HOME/.config/ghostty"
 ln -sf "$DIR/starship.toml" "$HOME/.config/starship.toml"
 ln -sf "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
+# claude-auto: troca de conta do Claude Code no limite (ligar com `claude-auto install`)
+mkdir -p "$HOME/.local/bin"
+ln -sf "$DIR/claude-auto" "$HOME/.local/bin/claude-auto"
 
 # --- 7. Node LTS via fnm + pnpm ---
 info "Instalando Node LTS via fnm..."
