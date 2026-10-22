@@ -216,12 +216,15 @@ Limitações:
 **Rodízio**: *passa a próxima*). Substitui o Disco para acompanhar CPU, memória e disco e os apps que
 mais usam memória; a limpeza de temporários e a análise do que ocupa o disco continuam só no Disco.
 
-- **Barra de menus:** um anel em traço de sistema com o uso da conta em uso e o número ao lado
-  (`53%`), em largura fixa para o ícone não pular e caber ao lado do notch; com todas as contas
-  cheias, o anel fica tracejado. Nos Ajustes dá para trocar o anel pelo espeto (um pedaço por conta:
-  cheio é conta com folga, vazado é conta cheia) e ligar blocos de **CPU**, **RAM** e **HD** (rótulo
-  em cima, valor embaixo). Se o claude-auto parar de responder, o ícone fica a 35%, como item
-  desabilitado. Passando o mouse, aparece o resumo das contas e do Mac.
+- **Barra de menus:** a chama da Brasa dentro de um anel, em traço de sistema (16 pt, o peso dos
+  ícones do sistema): o anel é o uso da conta em uso, e o número ao lado (`53%`) usa a fonte do
+  relógio, alinhado pelos dígitos e encostado no ícone, com largura de dois dígitos para não pular.
+  Com todas as contas cheias, o anel fica tracejado. Nos Ajustes dá para trocar pelo espeto (um
+  pedaço por conta: cheio é conta com folga, vazado é conta cheia) e ligar blocos de **CPU**,
+  **RAM** e **HD** (rótulo em cima, valor embaixo). Se o claude-auto parar de responder, o ícone
+  fica a 35%, como item desabilitado. Passando o mouse, aparece o resumo das contas e do Mac.
+- **Ícone do app:** uma brasa, com a chama sobre três carvões acesos, desenhada pelo próprio app
+  (`--icon`) e convertida no `.icns` pelo `build.sh`.
 - **Painel** (clique no ícone ou no widget): uma grade de módulos de vidro, como a Central de
   Controle do macOS 26. Os módulos abrem fechados; clicar abre o detalhe dentro deles, como os de
   Wi-Fi e Som.
@@ -279,8 +282,8 @@ ajustes do Rodízio. Código: `App.swift` (ajustes, marca, prévias), `Panel.swi
 e desenho em comum com o widget), `WidgetViews.swift` e `Widget.swift` (widget).
 
 Para conferir sem a barra: `~/Applications/Brasa.app/Contents/MacOS/Brasa --stats` imprime as leituras
-do Mac (para comparar com o Monitor de Atividade), e `--snapshot paineis.png`, `--widgets widgets.png`
-e `--icon icone.png` desenham o visual. "Sair" no painel fecha até o próximo login. Para remover de
+do Mac (para comparar com o Monitor de Atividade), e `--snapshot paineis.png`, `--widgets widgets.png`,
+`--menubar barra.png` (o item da barra ampliado, ao lado do relógio) e `--icon icone.png` desenham o visual. "Sair" no painel fecha até o próximo login. Para remover de
 vez: `launchctl bootout gui/$(id -u)/com.rannimontagna.brasa` e apague o `.plist` em
 `~/Library/LaunchAgents` e o app em `~/Applications`.
 
