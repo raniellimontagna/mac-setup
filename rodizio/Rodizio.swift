@@ -219,24 +219,27 @@ enum LoginItem {
 @MainActor
 final class Prefs: ObservableObject {
     static let shared = Prefs()
-    private let defaults = UserDefaults.standard
+    /// Onde salvar; nil nas prévias, que mudam os ajustes só para desenhar.
+    private let defaults: UserDefaults?
 
     /// Mini barras coloridas (uma por conta) ao lado do espeto.
-    @Published var showBars: Bool { didSet { defaults.set(showBars, forKey: "showBars") } }
+    @Published var showBars: Bool { didSet { defaults?.set(showBars, forKey: "showBars") } }
     /// Bloco com a conta em foco e o percentual dela.
-    @Published var showBlock: Bool { didSet { defaults.set(showBlock, forKey: "showBlock") } }
+    @Published var showBlock: Bool { didSet { defaults?.set(showBlock, forKey: "showBlock") } }
     @Published var notify: Bool {
         didSet {
-            defaults.set(notify, forKey: "notify")
-            if notify { Notifier.requestAuthorization() }
+            defaults?.set(notify, forKey: "notify")
+            if notify, defaults != nil { Notifier.requestAuthorization() }
         }
     }
     @Published private(set) var launchAtLogin = LoginItem.isEnabled()
 
-    init() {
-        showBars = defaults.object(forKey: "showBars") as? Bool ?? false
-        showBlock = defaults.object(forKey: "showBlock") as? Bool ?? true
-        notify = defaults.object(forKey: "notify") as? Bool ?? true
+    init(persist: Bool = true) {
+        let saved = UserDefaults.standard
+        defaults = persist ? saved : nil
+        showBars = saved.object(forKey: "showBars") as? Bool ?? false
+        showBlock = saved.object(forKey: "showBlock") as? Bool ?? true
+        notify = saved.object(forKey: "notify") as? Bool ?? true
     }
 
     func setLaunchAtLogin(_ on: Bool) {
@@ -279,6 +282,23 @@ enum Notifier {
         let to = new.accounts.filter { $0.in_use > 0 }.map(\.name)
         if let f = from.first, let t = to.first(where: { !from.contains($0) }), !to.contains(f) {
             post("claude-auto passou para \(t.capitalized)", "A sessão segue de onde parou em \(f.capitalized).")
+        }
+    }
+
+    /// Conta → reset da janela em que já avisou que ela ia encher (um aviso por janela).
+    private static var warned: [String: Double] = [:]
+
+    /// Aviso antecipado: uma conta em uso deve chegar ao limiar em até 20 min.
+    static func forecast(_ snap: Snapshot, history: [String: [Sample]], now: Date) {
+        guard Prefs.shared.notify else { return }
+        for a in snap.accounts where a.in_use > 0 || a.recentlyActive(now: now) {
+            guard let f = a.forecast(history: history[a.name] ?? [], threshold: snap.threshold, now: now),
+                  let reset = a.window(\.five_hour, now: now)?.resets_at,
+                  f.minutesLeft(now: now) <= 20, warned[a.name] != reset else { continue }
+            warned[a.name] = reset
+            let next = snap.after(a.name).map { "Depois dela vem \($0.capitalized)." } ?? "Nenhuma outra conta tem folga agora."
+            post("\(a.title) deve encher às \(timeText(f.fullAt.timeIntervalSince1970, now: now))",
+                 "No ritmo atual, faltam ~\(f.minutesLeft(now: now)) min. \(next)")
         }
     }
 }
@@ -577,6 +597,15 @@ struct AccountModule: View {
             if let five = account.window(\.five_hour, now: now) {
                 WindowLine(label: "5h", window: five, threshold: snap.threshold, now: now)
             }
+            if let f = account.forecast(history: samples, threshold: snap.threshold, now: now) {
+                HStack(spacing: 5) {
+                    Image(systemName: "chart.line.uptrend.xyaxis").font(.system(size: 9, weight: .semibold))
+                    Text("no ritmo atual, chega a \(Int(snap.threshold))% às \(timeText(f.fullAt.timeIntervalSince1970, now: now))"
+                         + " · +\(Int(f.pointsPerHour.rounded())) pts/h")
+                }
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(Color.alerta)
+            }
             if let seven = account.window(\.seven_day, now: now) {
                 WindowLine(label: "7d", window: seven, threshold: snap.threshold, now: now)
             }
@@ -635,7 +664,13 @@ struct SummaryModule: View {
 
     private var subtitle: String {
         var parts: [String] = []
-        if let next = snap.next { parts.append("próxima: \(next.capitalized)") } else { parts.append("todas cheias") }
+        if let order = snap.orderText {
+            parts.append("ordem agora: \(order)")
+        } else if let next = snap.next {
+            parts.append("próxima: \(next.capitalized)")
+        } else {
+            parts.append("todas cheias")
+        }
         if let first = snap.firstToFree(now: now) {
             parts.append("\(first.title) libera às \(timeText(first.free_at, now: now))")
         }
@@ -664,7 +699,8 @@ struct SettingsModule: View {
                 .font(.system(size: 10)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             Divider()
             section("Avisos")
-            toggle("Avisar quando uma conta encher, liberar ou o claude-auto trocar", $prefs.notify)
+            toggle("Avisar quando uma conta estiver para encher (~20 min), encher, liberar ou o claude-auto trocar",
+                   $prefs.notify)
             Divider()
             section("Início")
             toggle("Abrir junto com o Mac", Binding(get: { prefs.launchAtLogin }, set: { prefs.setLaunchAtLogin($0) }))
@@ -728,7 +764,7 @@ struct PanelView: View {
 
             HStack {
                 if let snap = store.snapshot {
-                    Text("Passa a próxima. · fila " + snap.accounts.map(\.initial).joined(separator: "→")
+                    Text("Passa a próxima. · " + (snap.usesResetOrder ? "zera antes, usa antes" : "ordem fixa")
                          + " · troca em \(Int(snap.threshold))%")
                         .font(.system(size: 10)).foregroundStyle(.tertiary)
                 }
@@ -930,11 +966,15 @@ enum Previews {
     static func panels(to path: String) {
         let store = Store()
         store.refreshNow()
-        let prefs = Prefs()
+        // Ajustes só em memória: a prévia não pode mudar a barra de verdade.
+        let prefs = Prefs(persist: false)
+        prefs.showBars = false
+        prefs.showBlock = true
         let settings = PanelUI()
         settings.showingSettings = true
-        let bars = Prefs()
+        let bars = Prefs(persist: false)
         bars.showBars = true
+        bars.showBlock = true
 
         func bar(_ p: Prefs, dark: Bool) -> some View {
             Image(nsImage: MenuBarArt.image(store.snapshot, prefs: p, now: store.now, ink: dark ? .white : .black))
@@ -1035,7 +1075,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let store = Store.shared
-        store.onUpdate = { old, oldNow, new, now in Notifier.diff(old: old, oldNow: oldNow, new: new, now: now) }
+        store.onUpdate = { old, oldNow, new, now in
+            Notifier.diff(old: old, oldNow: oldNow, new: new, now: now)
+            Notifier.forecast(new, history: store.history, now: now)
+        }
         status = StatusController(store: store, prefs: .shared)
         store.start()
         if Prefs.shared.notify { Notifier.requestAuthorization() }

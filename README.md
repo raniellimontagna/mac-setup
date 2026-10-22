@@ -176,14 +176,24 @@ limite, sem perder a sessão:
 - **Antes do limite**: a statusline grava o uso (janelas de 5h e 7d) de cada conta; no fim de cada
   turno (hook `Stop`), se a conta passou de 95% e existe outra com folga, a troca acontece antes de
   uma resposta falhar no meio.
+- **Zera antes, usa antes**: entre as contas com folga, a próxima é a que zera primeiro. O que sobra
+  numa janela se perde quando ela zera, enquanto as outras guardam o saldo. Conta sem janela aberta
+  não perde nada e vem depois; conta a menos de 10 pontos do limiar vai para o fim, porque trocaria
+  logo de novo. Empate segue a fila. `CLAUDE_AUTO_STRATEGY=fila` volta para a ordem fixa e
+  `CLAUDE_AUTO_MIN_HEADROOM` muda os 10 pontos.
+- **Desbloqueio automático**: uma conta bloqueada por 429 volta sozinha para a fila quando chega uma
+  leitura nova de uso (valores diferentes dos guardados no 429, ou seja, uma resposta nova da API)
+  com todas as janelas abaixo do limiar. Se ela levar outro 429 em menos de 2 h, o limite era outro
+  (semanal, de modelo) que a statusline não mostra, e a conta fica travada até o fim do bloqueio.
 
-Fila padrão: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILES`; o limiar, com
-`CLAUDE_AUTO_THRESHOLD`). O `setup.sh` linka o script em `~/.local/bin`.
+Fila: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILES`; o limiar, com
+`CLAUDE_AUTO_THRESHOLD`); é a ordem de desempate e a do modo `fila`. O `setup.sh` linka o script em
+`~/.local/bin`.
 
 ```bash
 claude-auto install          # uma vez: liga os hooks e encadeia a statusline no ~/.claude/settings.json
 claude-auto                  # no lugar do `claude`; aceita as mesmas flags (ex.: claude-auto --continue)
-claude-auto status           # uso conhecido e quando cada conta libera
+claude-auto status           # uso conhecido, quando cada conta libera e a ordem de uso agora
 claude-auto unblock <conta>  # libera uma conta marcada como cheia
 claude-auto doctor           # confere hooks, statusline e perfis
 ```
@@ -210,17 +220,21 @@ com o próximo espeto, e cada conta é um pedaço do espeto.
   (verde, amarelo, vermelho a partir do limiar) ligam nos Ajustes. Passando o mouse, aparece o resumo
   de todas as contas.
 - **Painel** (clique no espeto), de vidro e em módulos, como a Central de Controle:
-  - resumo: quantas contas têm folga, qual é a próxima da fila e qual cheia libera primeiro;
-  - um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, o
-    histórico das últimas 24 h e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até
-    HH:MM), mais o botão **Liberar agora** quando a conta está bloqueada.
-- **Avisos:** notificação quando uma conta enche, quando libera e quando o `claude-auto` passa a
-  sessão para outra conta.
+  - resumo: quantas contas têm folga, a ordem de uso agora e qual cheia libera primeiro;
+  - um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, a
+    **previsão** ("no ritmo atual, chega a 95% às 21:56 · +37 pts/h"), o histórico das últimas
+    24 h e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), mais o botão
+    **Liberar agora** quando a conta está bloqueada.
+- **Previsão:** o ritmo da última hora dentro da janela de 5h. Só aparece se o uso subiu ao menos
+  2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
+- **Avisos:** notificação ~20 min antes de uma conta em uso encher (uma vez por janela, dizendo
+  qual vem depois), quando ela enche, quando libera e quando o `claude-auto` passa a sessão para
+  outra conta.
 - **Widgets** (Central de Notificações ou mesa: **Editar Widgets…** → *Rodízio*):
   - **pequeno:** quantas contas têm folga (`3/4`), uma coluna por conta e a próxima da fila;
   - **médio:** o mesmo resumo e uma linha por conta, com a barra e o % (ou "até HH:MM" se cheia);
-  - **grande:** o resumo e um cartão por conta, com e-mail, estado, barra, linha do histórico e
-    horário em que a janela zera.
+  - **grande:** a ordem de uso e um cartão por conta, com e-mail, estado, barra, linha do
+    histórico e o horário em que a janela zera (ou "enche HH:MM", quando há previsão).
 
   Clicar no widget abre o painel. O app grava o retrato em
   `~/Library/Application Support/Rodizio/widget.json` e pede para o widget redesenhar quando muda

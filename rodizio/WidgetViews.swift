@@ -183,10 +183,18 @@ struct LargeRow: View {
                 if hasTrend(samples) {
                     Sparkline(samples: samples, now: now, tint: tint).frame(width: 56)
                 }
-                Text(account.window(\.five_hour, now: now).map { "zera \(timeText($0.resets_at, now: now))" } ?? "")
-                    .font(.system(size: 9).monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .frame(width: 62, alignment: .trailing)
+                // Previsão de encher vale mais que o horário de reset quando existe.
+                if let f = account.forecast(history: samples, threshold: snap.threshold, now: now) {
+                    Text("enche \(timeText(f.fullAt.timeIntervalSince1970, now: now))")
+                        .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                        .foregroundStyle(Color.alerta)
+                        .frame(width: 62, alignment: .trailing)
+                } else {
+                    Text(account.window(\.five_hour, now: now).map { "zera \(timeText($0.resets_at, now: now))" } ?? "")
+                        .font(.system(size: 9).monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 62, alignment: .trailing)
+                }
             }
         }
         .padding(.horizontal, 8).padding(.vertical, 6)
@@ -259,13 +267,13 @@ struct LargeWidgetView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(free > 0 ? Color.folga : Color.cheia)
             }
-            Text(queueLine(snap, now: now))
+            Text(snap.orderText.map { "ordem: \($0)" } ?? queueLine(snap, now: now))
                 .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
             ForEach(snap.accounts) { a in
                 LargeRow(account: a, snap: snap, now: now, samples: payload.history[a.name] ?? [])
             }
             Spacer(minLength: 0)
-            Text("Passa a próxima. · fila " + snap.accounts.map(\.initial).joined(separator: "→")
+            Text("Passa a próxima. · " + (snap.usesResetOrder ? "zera antes, usa antes" : "ordem fixa")
                  + " · troca em \(Int(snap.threshold))%")
                 .font(.system(size: 9.5)).foregroundStyle(.tertiary)
         }

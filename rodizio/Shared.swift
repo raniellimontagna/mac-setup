@@ -78,8 +78,25 @@ struct Snapshot: Codable {
     let threshold: Double
     let next: String?
     let accounts: [Account]
+    /// "reset" (usa primeiro a que zera antes) ou "fila" (ordem fixa).
+    var strategy: String? = nil
+    /// Contas livres na ordem em que o claude-auto vai usá-las.
+    var queue: [String]? = nil
 
     func freeCount(now: Date) -> Int { accounts.filter { $0.hasRoom(now: now) }.count }
+
+    var usesResetOrder: Bool { strategy != "fila" }
+
+    /// "Contato → Ranielli → Pessoal", na ordem de uso.
+    var orderText: String? {
+        guard let queue, !queue.isEmpty else { return nil }
+        return queue.map(\.capitalized).joined(separator: " → ")
+    }
+
+    /// A conta livre que vem depois de `name` na ordem de uso.
+    func after(_ name: String) -> String? {
+        queue?.first { $0 != name }
+    }
 
     /// Conta do bloco da barra: a que está em uso; senão a que usou por
     /// último; senão a próxima da fila.
@@ -100,6 +117,33 @@ struct Snapshot: Codable {
 struct Sample: Codable {
     let t: Double
     let p: Double
+}
+
+/// Quando a conta chega ao limiar no ritmo da última hora (dentro da janela
+/// atual de 5h). Só existe se o uso subiu pelo menos 2 pontos em 10 min ou
+/// mais e se o limiar chega antes de a janela zerar.
+struct Forecast {
+    let fullAt: Date
+    let pointsPerHour: Double
+
+    func minutesLeft(now: Date) -> Int { max(0, Int(fullAt.timeIntervalSince(now) / 60)) }
+}
+
+extension Account {
+    func forecast(history: [Sample], threshold: Double, now: Date) -> Forecast? {
+        guard loggedIn, !isFull(now: now),
+              let w = window(\.five_hour, now: now), w.used_percentage < threshold else { return nil }
+        let t = now.timeIntervalSince1970
+        let windowStart = w.resets_at - 5 * 3600
+        guard let first = history.first(where: { $0.t >= max(windowStart, t - 3600) }),
+              t - first.t >= 600 else { return nil }
+        let rise = w.used_percentage - first.p
+        guard rise >= 2 else { return nil }
+        let rate = rise / (t - first.t)
+        let fullAt = t + (threshold - w.used_percentage) / rate
+        guard fullAt < w.resets_at else { return nil }
+        return Forecast(fullAt: Date(timeIntervalSince1970: fullAt), pointsPerHour: rate * 3600)
+    }
 }
 
 // MARK: - Arquivo do widget
