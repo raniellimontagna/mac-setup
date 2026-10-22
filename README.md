@@ -175,7 +175,17 @@ limite, sem perder a sessão:
   conta da fila, com uma mensagem pedindo para continuar de onde parou.
 - **Antes do limite**: a statusline grava o uso (janelas de 5h e 7d) de cada conta; no fim de cada
   turno (hook `Stop`), se a conta passou de 95% e existe outra com folga, a troca acontece antes de
-  uma resposta falhar no meio.
+  uma resposta falhar no meio. Se a sessão só esperava você, ela volta quieta; se esperava um
+  comando em segundo plano (servidor, build, monitor), que morre na troca, ela volta com uma
+  mensagem para reiniciar o que faltar e continuar.
+- **Sem aviso de confiança na retomada**: cada conta guarda no próprio `.claude.json` as pastas em
+  que você confiou, então a sessão reaberta numa conta que nunca usou aquela pasta parava no aviso
+  "Is this a project you created or one you trust?". Como o Claude Code só roda hook em pasta
+  confiada, a troca prova que você já confiou nela: o `claude-auto` copia essa confiança para a
+  conta nova. Na pasta pessoal (`~`) o Claude Code nunca grava a confiança e pergunta a cada
+  abertura; ali a retomada usa o mesmo recurso com que o próprio Claude Code se reinicia sem
+  perguntar (`CLAUDE_CODE_RELAUNCH_HOME_TRUST`, conferido contra o processo novo). A primeira
+  abertura continua perguntando normalmente.
 - **Zera antes, usa antes**: entre as contas com folga, a próxima é a que zera primeiro. O que sobra
   numa janela se perde quando ela zera, enquanto as outras guardam o saldo. Conta sem janela aberta
   não perde nada e vem depois; conta a menos de 10 pontos do limiar vai para o fim, porque trocaria
@@ -202,7 +212,9 @@ Limitações:
 
 - Só o CLI no terminal. O app desktop tem login próprio e fica de fora.
 - A troca reinicia o processo: o cache de prompt começa frio na conta nova (a primeira resposta
-  gasta mais) e tarefas em background daquele turno se perdem.
+  gasta mais) e os comandos em segundo plano morrem (a sessão é avisada e os reinicia).
+- `CLAUDE_CODE_RELAUNCH_HOME_TRUST` é interno do Claude Code (visto na 2.1.308). Se uma versão
+  nova mudar o formato, a retomada na pasta pessoal volta a mostrar o aviso, sem outro efeito.
 - O prompt posicional (`claude-auto "faz X"`) só vai no primeiro launch; as retomadas não o reenviam.
 - `--print` não é suportado: não há sessão interativa para retomar.
 - Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
