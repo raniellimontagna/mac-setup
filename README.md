@@ -207,6 +207,12 @@ limite, sem perder a sessão:
   fica sempre em dia. Ela é lida primeiro lá (`ssh orca-dev ~/.local/bin/claude-usage`) e, se a VM
   não responder, no Mac. `CLAUDE_AUTO_REMOTES="orca:orca-dev"` é o padrão (vazio desliga);
   `CLAUDE_AUTO_LOCAL_USAGE=0` desliga a leitura pelo Keychain.
+- **Orca reservada para a orca-dev**: na VM não há troca de conta, e os `claude -p` param quando a
+  orca enche. Por isso o Mac só usa a orca com as outras três cheias: ela vai para o fim da ordem
+  de uso. Uma sessão do Mac que esteja nela (entrou com as outras cheias, ou veio de um wrapper
+  aberto antes da reserva) volta para outra conta no fim do turno assim que alguma tiver folga,
+  quieta, como na troca antecipada. Não troca com comando em segundo plano rodando e faz isso no
+  máximo uma vez a cada 30 min por sessão. `CLAUDE_AUTO_RESERVED="orca"` é o padrão; vazio desliga.
 - **Sem leitura**: leitura com mais de 15 min numa conta remota, ou de mais de 5 h numa do Mac
   (token vencido e ninguém usou pelo `claude-auto`), vira "sem leitura" no `status` e na Brasa,
   com o motivo, em vez de um 0% que pode ser falso.
@@ -283,7 +289,9 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
   2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
 - **Avisos:** notificação ~20 min antes de uma conta em uso encher (uma vez por janela, dizendo
   qual vem depois), quando ela enche, quando libera e quando o `claude-auto` passa a sessão para
-  outra conta.
+  outra conta. A orca, gasta na orca-dev, avisa mesmo sem sessão no Mac ("Orca chega a 95% às
+  19:24 na orca-dev"), porque lá o trabalho para quando ela enche. No painel, a orca mostra "da
+  orca-dev" e o detalhe explica a reserva.
 - **Widget Rodízio** (Central de Notificações ou mesa: **Editar Widgets…** → *Brasa*):
   - **pequeno:** quantas contas têm folga (`3/4`), uma coluna por conta e a próxima da fila;
   - **médio:** o mesmo resumo e uma linha por conta, com a barra e o % (ou "até HH:MM" se cheia);
