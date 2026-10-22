@@ -216,22 +216,33 @@ Limitações:
 **Rodízio**: *passa a próxima*). Substitui o Disco para acompanhar CPU, memória e disco e os apps que
 mais usam memória; a limpeza de temporários e a análise do que ocupa o disco continuam só no Disco.
 
-- **Barra de menus:** um espeto em traço de sistema, com um pedaço por conta (**cheio** é conta com
-  folga, **vazado** é conta cheia), e blocos com o rótulo em cima e o valor embaixo, de largura fixa
-  para o ícone não pular: a conta em uso (`P · 5H` / `36%`), **CPU**, **RAM** e **HD**. RAM e a
-  conta vêm ligados; CPU, HD e as mini barras coloridas por conta ligam nos Ajustes. Passando o mouse,
-  aparece o resumo do Mac e de todas as contas.
-- **Painel** (clique no espeto), de vidro e em módulos, como a Central de Controle, com a chave
-  **Mac | Rodízio** (abre na última usada):
-  - **Mac:** CPU (núcleos e carga), memória (usada como no Monitor de Atividade, swap e pressão, que
-    também dá a cor da barra) e Macintosh HD (livre como o Finder conta), mais os 5 apps que **mais
-    usam memória**, somando os processos auxiliares e o que foi aberto no terminal de cada app, com
-    um ⓧ para **forçar o encerramento** (pede confirmação). A lista só é lida com o painel aberto.
-  - **Rodízio:** resumo (quantas contas têm folga, a ordem de uso agora e qual cheia libera primeiro)
-    e um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, a
-    **previsão** ("no ritmo atual, chega a 95% às 21:56 · +37 pts/h"), o histórico das últimas 24 h
-    e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), mais o botão **Liberar
-    agora** quando a conta está bloqueada.
+- **Barra de menus:** um anel em traço de sistema com o uso da conta em uso e o número ao lado
+  (`53%`), em largura fixa para o ícone não pular e caber ao lado do notch; com todas as contas
+  cheias, o anel fica tracejado. Nos Ajustes dá para trocar o anel pelo espeto (um pedaço por conta:
+  cheio é conta com folga, vazado é conta cheia) e ligar blocos de **CPU**, **RAM** e **HD** (rótulo
+  em cima, valor embaixo). Se o claude-auto parar de responder, o ícone fica a 35%, como item
+  desabilitado. Passando o mouse, aparece o resumo das contas e do Mac.
+- **Painel** (clique no ícone ou no widget): uma grade de módulos de vidro, como a Central de
+  Controle do macOS 26. Os módulos abrem fechados; clicar abre o detalhe dentro deles, como os de
+  Wi-Fi e Som.
+  - **Contas:** um anel por conta, com o uso no centro, o tempo até zerar ("até HH:MM" se cheia,
+    "5h livres" com a janela fechada) e a nota (em uso, próxima, ativa). A marca no anel é o ritmo
+    ideal: onde o uso estaria se fosse uniforme até a janela zerar. Clicar num anel abre o detalhe:
+    o gráfico de queima da janela de 5h (uso, guia de uso uniforme tracejada, limiar e a projeção
+    pontilhada até ele), o ritmo em frase ("+22 pts/h, 2× o ritmo que dura até zerar"), a semana, o
+    e-mail logado e **Liberar agora** quando a conta está bloqueada.
+  - **CPU, Memória e Disco:** um anel cada, com carga, pressão de memória (que dá o estado) e o
+    espaço livre como o Finder conta.
+  - **Agora:** a frase de estado do claude-auto ("Pessoal enche por volta de 14:40 · Depois vem
+    Ranielli"; "Todas as contas estão cheias · Contato libera às 15:10").
+  - **Mais usam memória:** os 3 apps que mais usam memória (abre para 5, com o swap), somando os
+    processos auxiliares e o que foi aberto no terminal de cada app, com um ⓧ para **forçar o
+    encerramento** (pede confirmação). A lista só é lida com o painel aberto.
+  - Teclado: **⌘,** abre os Ajustes, **Esc** fecha o painel.
+- **Cores com forma:** azul para folga, laranja com triângulo para atenção (perto do limiar ou
+  gastando mais rápido do que a janela aguenta), vermelho com × e anel tracejado para cheia, anel
+  vazio para janela fechada. O estado se lê sem distinguir cores. A cor da marca (brasa) fica só no
+  ícone do app e nas ações.
 - **Previsão:** o ritmo da última hora dentro da janela de 5h. Só aparece se o uso subiu ao menos
   2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
 - **Avisos:** notificação ~20 min antes de uma conta em uso encher (uma vez por janela, dizendo
@@ -251,8 +262,8 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
   sandbox (o App Group, que o Disco usa, exige certificado). Se ele não aparecer na galeria, adicione
   uma Apple ID em Xcode → Settings → Accounts e rode o `build.sh` de novo: ele assina com o
   certificado "Apple Development" quando existe um.
-- **Ajustes** (engrenagem no painel): o que aparece na barra, com prévia; avisos; **Abrir junto
-  com o Mac**.
+- **Ajustes** (engrenagem ou ⌘, no painel), numa janela própria: o que aparece na barra, com
+  prévia; avisos; **Abrir junto com o Mac**.
 
 As contas vêm de `claude-auto status --json` (o app atualiza quando o claude-auto grava algo em
 `~/.local/state/claude-auto` e a cada 30 s); o Mac é lido direto do sistema a cada 5 s. O histórico
