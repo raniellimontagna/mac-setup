@@ -14,7 +14,7 @@ Instala as ferramentas, configura Git e SSH, e prepara o ambiente Node — tudo 
   - **Starship** no prompt (branch git, versão do Node, cores) + autosuggestions e syntax-highlighting
   - **Perfis do Claude Code** (`claude-pessoal` + um por conta de trabalho) — múltiplas contas com
     ambientes isolados, `claude-auto` para trocar de conta sozinho quando uma bate o limite e o
-    Rodízio para acompanhar as cotas na barra de menus —
+    Brasa para acompanhar o Mac e as cotas na barra de menus —
     veja [Múltiplas contas do Claude Code](#múltiplas-contas-do-claude-code)
 - Configura **gitignore global** ([`gitignore_global`](./gitignore_global)) e **aliases** do git (`st`, `co`, `lg`, `cm`...)
 - Instala o **Node LTS** via `fnm` e habilita **pnpm** via corepack
@@ -208,36 +208,43 @@ Limitações:
 - Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
   `claude-auto doctor` acusa e `claude-auto install` religa.
 
-#### Rodízio: as contas na barra de menus
+#### Brasa: o Mac e as contas na barra de menus
 
-*Passa a próxima.* O [Rodízio](./rodizio) é o par visual do `claude-auto`, um app nativo (SwiftUI) no
-estilo do [Disco](https://github.com/RogerBrusamarello/disco-macos): o nome vem do garçom que passa
-com o próximo espeto, e cada conta é um pedaço do espeto.
+*Tudo na brasa.* O [Brasa](./brasa) é um app nativo (SwiftUI) de barra de menus, no estilo do
+[Disco](https://github.com/RogerBrusamarello/disco-macos), que junta duas coisas: o Mac trabalhando
+(a brasa: CPU, memória e disco) e as contas Claude do `claude-auto` (os espetos, na seção
+**Rodízio**: *passa a próxima*). Substitui o Disco para acompanhar CPU, memória e disco e os apps que
+mais usam memória; a limpeza de temporários e a análise do que ocupa o disco continuam só no Disco.
 
-- **Barra de menus:** um espeto em traço de sistema, com um pedaço por conta: **cheio** é conta com
-  folga, **vazado** é conta cheia. Ao lado, o bloco com a conta em uso e o percentual dela
-  (`P · 5H` / `36%`), de largura fixa para o ícone não pular. As mini barras coloridas por conta
-  (verde, amarelo, vermelho a partir do limiar) ligam nos Ajustes. Passando o mouse, aparece o resumo
-  de todas as contas.
-- **Painel** (clique no espeto), de vidro e em módulos, como a Central de Controle:
-  - resumo: quantas contas têm folga, a ordem de uso agora e qual cheia libera primeiro;
-  - um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, a
-    **previsão** ("no ritmo atual, chega a 95% às 21:56 · +37 pts/h"), o histórico das últimas
-    24 h e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), mais o botão
-    **Liberar agora** quando a conta está bloqueada.
+- **Barra de menus:** um espeto em traço de sistema, com um pedaço por conta (**cheio** é conta com
+  folga, **vazado** é conta cheia), e blocos com o rótulo em cima e o valor embaixo, de largura fixa
+  para o ícone não pular: a conta em uso (`P · 5H` / `36%`), **CPU**, **RAM** e **HD**. RAM e a
+  conta vêm ligados; CPU, HD e as mini barras coloridas por conta ligam nos Ajustes. Passando o mouse,
+  aparece o resumo do Mac e de todas as contas.
+- **Painel** (clique no espeto), de vidro e em módulos, como a Central de Controle, com a chave
+  **Mac | Rodízio** (abre na última usada):
+  - **Mac:** CPU (núcleos e carga), memória (usada como no Monitor de Atividade, swap e pressão, que
+    também dá a cor da barra) e Macintosh HD (livre como o Finder conta), mais os 5 apps que **mais
+    usam memória**, somando os processos auxiliares e o que foi aberto no terminal de cada app, com
+    um ⓧ para **forçar o encerramento** (pede confirmação). A lista só é lida com o painel aberto.
+  - **Rodízio:** resumo (quantas contas têm folga, a ordem de uso agora e qual cheia libera primeiro)
+    e um módulo por conta, com o e-mail logado, o uso de 5h e 7d com o horário em que zera, a
+    **previsão** ("no ritmo atual, chega a 95% às 21:56 · +37 pts/h"), o histórico das últimas 24 h
+    e o estado (livre, ativa, em uso pelo `claude-auto`, cheia até HH:MM), mais o botão **Liberar
+    agora** quando a conta está bloqueada.
 - **Previsão:** o ritmo da última hora dentro da janela de 5h. Só aparece se o uso subiu ao menos
   2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
 - **Avisos:** notificação ~20 min antes de uma conta em uso encher (uma vez por janela, dizendo
   qual vem depois), quando ela enche, quando libera e quando o `claude-auto` passa a sessão para
   outra conta.
-- **Widgets** (Central de Notificações ou mesa: **Editar Widgets…** → *Rodízio*):
+- **Widget Rodízio** (Central de Notificações ou mesa: **Editar Widgets…** → *Brasa*):
   - **pequeno:** quantas contas têm folga (`3/4`), uma coluna por conta e a próxima da fila;
   - **médio:** o mesmo resumo e uma linha por conta, com a barra e o % (ou "até HH:MM" se cheia);
   - **grande:** a ordem de uso e um cartão por conta, com e-mail, estado, barra, linha do
     histórico e o horário em que a janela zera (ou "enche HH:MM", quando há previsão).
 
   Clicar no widget abre o painel. O app grava o retrato em
-  `~/Library/Application Support/Rodizio/widget.json` e pede para o widget redesenhar quando muda
+  `~/Library/Application Support/Brasa/widget.json` e pede para o widget redesenhar quando muda
   algo que se vê de relance (folga, conta em uso, próxima, faixa de 5 pontos de uso); o widget também
   vira sozinho quando uma conta libera ou uma janela zera, e no máximo a cada 15 min. Sem certificado
   de desenvolvedor, o widget é assinado ad-hoc e lê esse arquivo por uma exceção só de leitura do
@@ -247,17 +254,23 @@ com o próximo espeto, e cada conta é um pedaço do espeto.
 - **Ajustes** (engrenagem no painel): o que aparece na barra, com prévia; avisos; **Abrir junto
   com o Mac**.
 
-Os dados vêm de `claude-auto status --json`; o app atualiza quando o claude-auto grava algo em
-`~/.local/state/claude-auto` e a cada 30 s. O histórico fica em
-`~/Library/Application Support/Rodizio/history.json`. Precisa do Xcode.
+As contas vêm de `claude-auto status --json` (o app atualiza quando o claude-auto grava algo em
+`~/.local/state/claude-auto` e a cada 30 s); o Mac é lido direto do sistema a cada 5 s. O histórico
+fica em `~/Library/Application Support/Brasa/history.json`. Precisa do Xcode.
 
 ```bash
-bash rodizio/build.sh   # compila app e widget, gera o ícone, instala em ~/Applications e abre no login
+bash brasa/build.sh   # compila app e widget, gera o ícone, instala em ~/Applications e abre no login
 ```
 
-Para conferir o visual sem a barra: `~/Applications/Rodizio.app/Contents/MacOS/Rodizio --snapshot
-paineis.png` (e `--widgets widgets.png`, `--icon icone.png`). "Sair" no painel fecha até o próximo login. Para remover de vez:
-`launchctl bootout gui/$(id -u)/com.rannimontagna.rodizio` e apague o `.plist` em
+O `build.sh` também tira as versões anteriores (ClaudeAutoBar e Rodízio) e traz o histórico e os
+ajustes do Rodízio. Código: `App.swift` (ajustes, marca, prévias), `Panel.swift` (barra e painel),
+`Mac.swift` (CPU, memória, disco e apps), `Accounts.swift` (seção Rodízio), `Shared.swift` (modelo
+e desenho em comum com o widget), `WidgetViews.swift` e `Widget.swift` (widget).
+
+Para conferir sem a barra: `~/Applications/Brasa.app/Contents/MacOS/Brasa --stats` imprime as leituras
+do Mac (para comparar com o Monitor de Atividade), e `--snapshot paineis.png`, `--widgets widgets.png`
+e `--icon icone.png` desenham o visual. "Sair" no painel fecha até o próximo login. Para remover de
+vez: `launchctl bootout gui/$(id -u)/com.rannimontagna.brasa` e apague o `.plist` em
 `~/Library/LaunchAgents` e o app em `~/Applications`.
 
 ## Personalizando
