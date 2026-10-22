@@ -195,16 +195,21 @@ limite, sem perder a sessão:
   leitura nova de uso (valores diferentes dos guardados no 429, ou seja, uma resposta nova da API)
   com todas as janelas abaixo do limiar. Se ela levar outro 429 em menos de 2 h, o limite era outro
   (semanal, de modelo) que a statusline não mostra, e a conta fica travada até o fim do bloqueio.
-- **Conta usada em outra máquina**: a statusline só vê o que roda no Mac pelo `claude-auto`. A conta
-  orca também roda na VM orca-dev (`claude -p`, sem statusline), então o uso dela é lido direto
-  na Anthropic: o [`claude-usage`](./claude-usage), instalado na VM em `~/.local/bin`, consulta o
-  mesmo endereço do `/usage` do Claude Code com o login da própria VM (o token não sai de lá e nem
-  vai na linha de comando; vencido, ele só avisa). O Mac roda `ssh orca-dev ~/.local/bin/claude-usage`
-  a cada 3 min, quando o `status` (a Brasa chama a cada 30 s) ou o wrapper rodam, e grava como
-  leitura da conta. `CLAUDE_AUTO_REMOTES="orca:orca-dev"` é o padrão; vazio desliga.
+- **Uso real, lido na Anthropic**: a statusline só vê o que roda no Mac pelo `claude-auto`. A cada
+  3 min, quando o `status` (a Brasa chama a cada 30 s) ou o wrapper rodam, o
+  [`claude-usage`](./claude-usage) consulta o mesmo endereço do `/usage` do Claude Code para cada
+  conta, com o login dela: no Mac, o que o Claude Code guarda no Keychain; na VM, o
+  `~/.claude/.credentials.json`. Assim aparece também o gasto feito fora do `claude-auto` (app,
+  outra máquina) e o número de contas paradas. O token só vai para a Anthropic, nunca na linha de
+  comando, e nunca é gravado: vencido, o script pede ao próprio Claude Code o status do login (que
+  o renova, quando renova) e, se continuar vencido, avisa.
+- **Conta usada em outra máquina**: a orca também roda na VM orca-dev (`claude -p`), onde o login
+  fica sempre em dia. Ela é lida primeiro lá (`ssh orca-dev ~/.local/bin/claude-usage`) e, se a VM
+  não responder, no Mac. `CLAUDE_AUTO_REMOTES="orca:orca-dev"` é o padrão (vazio desliga);
+  `CLAUDE_AUTO_LOCAL_USAGE=0` desliga a leitura pelo Keychain.
 - **Sem leitura**: leitura com mais de 15 min numa conta remota, ou de mais de 5 h numa do Mac
-  (ninguém usou pelo `claude-auto` e o gasto feito fora não aparece), vira "sem leitura" no
-  `status` e na Brasa, em vez de um 0% que pode ser falso.
+  (token vencido e ninguém usou pelo `claude-auto`), vira "sem leitura" no `status` e na Brasa,
+  com o motivo, em vez de um 0% que pode ser falso.
 
 Fila: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILES`; o limiar, com
 `CLAUDE_AUTO_THRESHOLD`); é a ordem de desempate e a do modo `fila`. O `setup.sh` linka o script em
@@ -214,9 +219,9 @@ Fila: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILE
 claude-auto install          # uma vez: liga os hooks e encadeia a statusline no ~/.claude/settings.json
 claude-auto                  # no lugar do `claude`; aceita as mesmas flags (ex.: claude-auto --continue)
 claude-auto status           # uso conhecido, quando cada conta libera e a ordem de uso agora
-claude-auto pull             # lê agora o uso das contas remotas
+claude-auto pull             # lê agora o uso real das contas na Anthropic
 claude-auto unblock <conta>  # libera uma conta marcada como cheia
-claude-auto doctor           # confere hooks, statusline, perfis e a leitura remota
+claude-auto doctor           # confere hooks, statusline, perfis e a leitura de cada conta
 scp claude-usage orca-dev:.local/bin/   # instala ou atualiza o leitor na VM
 ```
 
@@ -259,7 +264,8 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
     pontilhada até ele), o ritmo em frase ("+22 pts/h, 2× o ritmo que dura até zerar"), a semana, o
     e-mail logado e **Liberar agora** quando a conta está bloqueada. Conta sem leitura recente
     mostra o anel pontilhado com "?", "sem leitura" e o motivo (há quanto tempo, "token vencido",
-    "orca-dev fora"), e fica fora da contagem "com folga"; a conta remota diz de onde veio o número.
+    "orca-dev fora"), e fica fora da contagem "com folga"; o detalhe diz de onde veio o número
+    ("Uso lido na Anthropic", "via orca-dev").
   - **CPU, Memória e Disco:** um anel cada, com carga, pressão de memória (que dá o estado) e o
     espaço livre como o Finder conta.
   - **Agora:** a frase de estado do claude-auto ("Pessoal enche por volta de 14:40 · Depois vem
