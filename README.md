@@ -195,6 +195,16 @@ limite, sem perder a sessão:
   leitura nova de uso (valores diferentes dos guardados no 429, ou seja, uma resposta nova da API)
   com todas as janelas abaixo do limiar. Se ela levar outro 429 em menos de 2 h, o limite era outro
   (semanal, de modelo) que a statusline não mostra, e a conta fica travada até o fim do bloqueio.
+- **Conta usada em outra máquina**: a statusline só vê o que roda no Mac pelo `claude-auto`. A conta
+  orca também roda na VM orca-dev (`claude -p`, sem statusline), então o uso dela é lido direto
+  na Anthropic: o [`claude-usage`](./claude-usage), instalado na VM em `~/.local/bin`, consulta o
+  mesmo endereço do `/usage` do Claude Code com o login da própria VM (o token não sai de lá e nem
+  vai na linha de comando; vencido, ele só avisa). O Mac roda `ssh orca-dev ~/.local/bin/claude-usage`
+  a cada 3 min, quando o `status` (a Brasa chama a cada 30 s) ou o wrapper rodam, e grava como
+  leitura da conta. `CLAUDE_AUTO_REMOTES="orca:orca-dev"` é o padrão; vazio desliga.
+- **Sem leitura**: leitura com mais de 15 min numa conta remota, ou de mais de 5 h numa do Mac
+  (ninguém usou pelo `claude-auto` e o gasto feito fora não aparece), vira "sem leitura" no
+  `status` e na Brasa, em vez de um 0% que pode ser falso.
 
 Fila: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILES`; o limiar, com
 `CLAUDE_AUTO_THRESHOLD`); é a ordem de desempate e a do modo `fila`. O `setup.sh` linka o script em
@@ -204,8 +214,10 @@ Fila: `pessoal → ranielli → contato → orca` (mude com `CLAUDE_AUTO_PROFILE
 claude-auto install          # uma vez: liga os hooks e encadeia a statusline no ~/.claude/settings.json
 claude-auto                  # no lugar do `claude`; aceita as mesmas flags (ex.: claude-auto --continue)
 claude-auto status           # uso conhecido, quando cada conta libera e a ordem de uso agora
+claude-auto pull             # lê agora o uso das contas remotas
 claude-auto unblock <conta>  # libera uma conta marcada como cheia
-claude-auto doctor           # confere hooks, statusline e perfis
+claude-auto doctor           # confere hooks, statusline, perfis e a leitura remota
+scp claude-usage orca-dev:.local/bin/   # instala ou atualiza o leitor na VM
 ```
 
 Limitações:
@@ -245,7 +257,9 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
     ideal: onde o uso estaria se fosse uniforme até a janela zerar. Clicar num anel abre o detalhe:
     o gráfico de queima da janela de 5h (uso, guia de uso uniforme tracejada, limiar e a projeção
     pontilhada até ele), o ritmo em frase ("+22 pts/h, 2× o ritmo que dura até zerar"), a semana, o
-    e-mail logado e **Liberar agora** quando a conta está bloqueada.
+    e-mail logado e **Liberar agora** quando a conta está bloqueada. Conta sem leitura recente
+    mostra o anel pontilhado com "?", "sem leitura" e o motivo (há quanto tempo, "token vencido",
+    "orca-dev fora"), e fica fora da contagem "com folga"; a conta remota diz de onde veio o número.
   - **CPU, Memória e Disco:** um anel cada, com carga, pressão de memória (que dá o estado) e o
     espaço livre como o Finder conta.
   - **Agora:** a frase de estado do claude-auto ("Pessoal enche por volta de 14:40 · Depois vem
@@ -256,7 +270,8 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
   - Teclado: **⌘,** abre os Ajustes, **Esc** fecha o painel.
 - **Cores com forma:** azul para folga, laranja com triângulo para atenção (perto do limiar ou
   gastando mais rápido do que a janela aguenta), vermelho com × e anel tracejado para cheia, anel
-  vazio para janela fechada. O estado se lê sem distinguir cores. A cor da marca (brasa) fica só no
+  vazio para janela fechada, anel pontilhado com "?" para sem leitura. O estado se lê sem distinguir
+  cores. A cor da marca (brasa) fica só no
   ícone do app e nas ações.
 - **Previsão:** o ritmo da última hora dentro da janela de 5h. Só aparece se o uso subiu ao menos
   2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
