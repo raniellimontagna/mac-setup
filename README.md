@@ -236,21 +236,35 @@ claude-auto                  # no lugar do `claude`; aceita as mesmas flags (ex.
 claude-auto status           # uso conhecido, quando cada conta libera e a ordem de uso agora
 claude-auto pull             # lê agora o uso real das contas na Anthropic
 claude-auto unblock <conta>  # libera uma conta marcada como cheia
-claude-auto doctor           # confere hooks, statusline, perfis e a leitura de cada conta
+claude-auto doctor           # confere hooks, statusline, perfis, a leitura de cada conta e o Claude Code
 scp claude-usage orca-dev:.local/bin/   # instala ou atualiza o leitor na VM
+zsh tests/claude-auto/run.zsh           # testes, com claude, ssh e leitor falsos (nada real é tocado)
 ```
+
+- **Religa sozinho**: se outro app (o Orca) reescrever o `settings.json` e tirar os hooks ou a
+  statusline, o `claude-auto` religa antes de abrir uma sessão e, enquanto a Brasa estiver aberta,
+  em até 30 s (a Brasa chama o `status` a cada 30 s). A statusline nova do outro app vira a cadeia
+  chamada depois da do `claude-auto`, e o backup do `settings.json` sai no máximo um por dia.
+  Depois de um `claude-auto uninstall`, nada é religado até o próximo `install`.
+- **Claude Code novo**: o `claude-auto` depende de duas coisas não documentadas do Claude Code, o
+  evento `StopFailure` e a variável interna `CLAUDE_CODE_RELAUNCH_HOME_TRUST`. A cada versão nova
+  do binário ele confere se elas continuam lá; se sumirem, o `doctor` e a Brasa avisam.
+
+Os testes da previsão da Brasa: `swiftc -parse-as-library brasa/Shared.swift
+tests/brasa/forecast_test.swift -o /tmp/forecast_test && /tmp/forecast_test`.
 
 Limitações:
 
 - Só o CLI no terminal. O app desktop tem login próprio e fica de fora.
 - A troca reinicia o processo: o cache de prompt começa frio na conta nova (a primeira resposta
   gasta mais) e os comandos em segundo plano morrem (a sessão é avisada e os reinicia).
-- `CLAUDE_CODE_RELAUNCH_HOME_TRUST` é interno do Claude Code (visto na 2.1.308). Se uma versão
-  nova mudar o formato, a retomada na pasta pessoal volta a mostrar o aviso, sem outro efeito.
+- `CLAUDE_CODE_RELAUNCH_HOME_TRUST` é interno do Claude Code (visto até a 2.1.309). Se uma versão
+  nova mudar o formato, a retomada na pasta pessoal volta a mostrar o aviso, sem outro efeito (se
+  o nome sumir do binário, o `doctor` e a Brasa avisam).
 - O prompt posicional (`claude-auto "faz X"`) só vai no primeiro launch; as retomadas não o reenviam.
 - `--print` não é suportado: não há sessão interativa para retomar.
-- Se outro app reescrever o `statusLine` do `settings.json` (ex.: Orca), só a troca antecipada para;
-  `claude-auto doctor` acusa e `claude-auto install` religa.
+- Entre o Orca reescrever o `settings.json` e o reparo (até 30 s com a Brasa aberta, ou na próxima
+  sessão), a troca antecipada fica parada.
 
 #### Brasa: o Mac e as contas na barra de menus
 
@@ -298,6 +312,10 @@ trackpad e a do mouse em sentidos diferentes.
   ícone do app e nas ações.
 - **Previsão:** o ritmo da última hora dentro da janela de 5h. Só aparece se o uso subiu ao menos
   2 pontos em 10 min ou mais e se o limiar chega antes de a janela zerar.
+- **Saúde da instalação:** quando falta um hook, a statusline ou algo do Claude Code de que o
+  `claude-auto` depende, o painel abre com o aviso "claude-auto precisa de atenção" e o que está
+  faltando, com **Religar** quando é hook ou statusline. Uma notificação avisa quando o problema
+  aparece e quando o `claude-auto` religou sozinho ("Outro app (o Orca?) tinha tirado: …").
 - **Avisos:** notificação ~20 min antes de uma conta em uso encher (uma vez por janela, dizendo
   qual vem depois), quando ela enche, quando libera e quando o `claude-auto` passa a sessão para
   outra conta. Enquanto a orca-dev trabalha na orca, ela avisa mesmo sem sessão no Mac ("Orca
