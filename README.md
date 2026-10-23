@@ -340,6 +340,22 @@ fica em `~/Library/Application Support/Brasa/history.json`. Precisa do Xcode.
 bash brasa/build.sh   # compila app e widget, gera o ícone, instala em ~/Applications e abre no login
 ```
 
+**Certificado local (uma vez por Mac):** sem certificado de desenvolvedor, o `build.sh` assinaria
+ad-hoc, e cada build mudaria a identidade do app (o macOS esquece a permissão de Acessibilidade).
+Com um certificado autoassinado chamado **Brasa Local**, a identidade fica a mesma entre builds:
+
+1. Acesso às Chaves → menu **Acesso às Chaves → Assistente de Certificado → Criar um Certificado…**
+2. Nome **Brasa Local**, Tipo de Identidade **Raiz Autoassinada**, Tipo de Certificado
+   **Assinatura de Código** → Criar.
+3. No primeiro `build.sh`, o macOS pergunta se o `codesign` pode usar a chave: **Permitir Sempre**.
+4. Uma última vez, apague a entrada antiga em Acessibilidade
+   (`tccutil reset Accessibility com.rannimontagna.brasa`) e ligue o Brasa no pedido. Daí em
+   diante, os builds mantêm a permissão.
+
+O `build.sh` diz com o que assinou (`assinado com: Brasa Local`). O certificado vale um ano (o
+deste Mac, criado em 23/10/2026, vence em 23/10/2027): ao vencer, crie outro com o mesmo nome e
+repita o passo 4 uma vez.
+
 O `build.sh` também tira as versões anteriores (ClaudeAutoBar e Rodízio) e traz o histórico e os
 ajustes do Rodízio. Código: `App.swift` (ajustes, marca, prévias), `Panel.swift` (barra e painel),
 `Mac.swift` (CPU, memória, disco e apps), `Accounts.swift` (seção Rodízio), `Shared.swift` (modelo
