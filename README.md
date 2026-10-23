@@ -364,6 +364,19 @@ A chave vale para o trackpad e o mouse juntos; para ter o trackpad natural e o m
 o [Brasa](#brasa-o-mac-e-as-contas-na-barra-de-menus) inverte o aparelho que fica do outro jeito
 (Ajustes do Brasa → Rolagem). Ele substituiu o LinearMouse, que saiu do Brewfile.
 
+## Dica: print de uma região, sem app
+
+O print nativo faz o que o Shottr fazia aqui (recortar uma região e copiar ou salvar), sem
+outro app aberto; o Shottr saiu do Brewfile.
+
+| Para | Atalho |
+|---|---|
+| Região → área de transferência | **⌃⌘⇧4** (ou ⌘⇧4 segurando ⌃ ao soltar o mouse) |
+| Região → arquivo (Mesa) | **⌘⇧4**; a miniatura no canto dá para arrastar para um app ou clicar para anotar |
+| Pasta, temporizador, tela inteira | **⌘⇧5** → Opções |
+
+Os atalhos mudam em Ajustes do Sistema → Teclado → Atalhos de Teclado → Capturas de Tela.
+
 ## Gotchas de macOS (scripts shell)
 
 O macOS usa ferramentas **BSD**, não GNU — alguns comandos diferem do Linux e

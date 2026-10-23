@@ -45,7 +45,6 @@ cask "tailscale-app"        # VPN mesh (acesso remoto ao servidor de casa)
 cask "ollama-app"           # rodar modelos de IA localmente (LLMs)
 cask "lm-studio"            # GUI para rodar LLMs locais (usa llama.cpp)
 cask "grok-build"           # CLI oficial da xAI (Grok) — agente de código no terminal
-cask "shottr"               # screenshots (scrolling, OCR, anotação, redação)
 cask "keka"                 # extrai e cria arquivos (zip/rar/7z/tar...)
 cask "raycast"              # launcher / atalhos / clipboard / snippets
 cask "stats"                # monitor de sistema na barra de menu
