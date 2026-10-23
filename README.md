@@ -360,8 +360,9 @@ vez: `launchctl bootout gui/$(id -u)/com.rannimontagna.brasa` e apague o `.plist
 
 O macOS vem com "rolagem natural" ligada. Para inverter (como no Linux/Windows):
 Ajustes do Sistema → Trackpad / Mouse → desmarque **Rolagem natural**.
-O app **LinearMouse** (no Brewfile) permite configurar scroll por dispositivo
-(mouse vs trackpad separados) e desativar a aceleração do ponteiro.
+A chave vale para o trackpad e o mouse juntos; para ter o trackpad natural e o mouse tradicional,
+o [Brasa](#brasa-o-mac-e-as-contas-na-barra-de-menus) inverte o aparelho que fica do outro jeito
+(Ajustes do Brasa → Rolagem). Ele substituiu o LinearMouse, que saiu do Brewfile.
 
 ## Gotchas de macOS (scripts shell)
 
