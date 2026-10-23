@@ -259,6 +259,8 @@ Limitações:
 (a brasa: CPU, memória e disco) e as contas Claude do `claude-auto` (os espetos, na seção
 **Rodízio**: *passa a próxima*). Substitui o Disco para acompanhar CPU, memória e disco e os apps que
 mais usam memória; a limpeza de temporários e a análise do que ocupa o disco continuam só no Disco.
+Também substitui o [LinearMouse](https://linearmouse.app), que só servia para deixar a rolagem do
+trackpad e a do mouse em sentidos diferentes.
 
 - **Barra de menus:** a chama da Brasa dentro de um anel, em traço de sistema (16 pt, o peso dos
   ícones do sistema): o anel é o uso da conta em uso, e o número ao lado (`53%`) usa a fonte do
@@ -316,8 +318,19 @@ mais usam memória; a limpeza de temporários e a análise do que ocupa o disco 
   sandbox (o App Group, que o Disco usa, exige certificado). Se ele não aparecer na galeria, adicione
   uma Apple ID em Xcode → Settings → Accounts e rode o `build.sh` de novo: ele assina com o
   certificado "Apple Development" quando existe um.
+- **Rolagem por aparelho:** trackpad com rolagem natural e mouse de roda com rolagem tradicional.
+  O macOS tem uma chave só de "Rolagem natural" para os dois; o Brasa inverte o aparelho que fica
+  do outro jeito (com a chave desligada, inverte o trackpad; ligada, o mouse). Trackpad e Magic
+  Mouse rolam em eventos contínuos e a roda do mouse em linhas, e é assim que ele distingue. Usa
+  um event tap, que precisa da permissão de **Acessibilidade**. Como o Brasa é assinado ad-hoc, a
+  identidade muda a cada `build.sh` e a permissão precisa ser dada de novo: ligar de novo a entrada
+  antiga não basta, porque ela guarda a assinatura do build anterior. Apague a entrada (com − na
+  lista ou `tccutil reset Accessibility com.rannimontagna.brasa`), reabra o Brasa e ligue no pedido
+  que aparece. Os Ajustes mostram o estado e um botão para abrir a lista, e o estado também fica
+  em `~/Library/Application Support/Brasa/scroll.json`. Com o LinearMouse aberto o Brasa não
+  inverte nada (os dois juntos inverteriam duas vezes) e oferece fechá-lo.
 - **Ajustes** (engrenagem ou ⌘, no painel), numa janela própria: o que aparece na barra, com
-  prévia; avisos; **Abrir junto com o Mac**.
+  prévia; rolagem por aparelho; avisos; **Abrir junto com o Mac**.
 
 As contas vêm de `claude-auto status --json` (o app atualiza quando o claude-auto grava algo em
 `~/.local/state/claude-auto` e a cada 30 s); o Mac é lido direto do sistema a cada 5 s. O histórico
