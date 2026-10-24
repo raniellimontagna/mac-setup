@@ -9,12 +9,18 @@ if [ -x /opt/homebrew/bin/brew ]; then
 fi
 
 # --- fnm (Fast Node Manager) ---
+# No Mac vem do Homebrew; no Linux o instalador oficial deixa em ~/.local/share/fnm.
+[ -x "$HOME/.local/share/fnm/fnm" ] && export PATH="$HOME/.local/share/fnm:$PATH"
 if command -v fnm >/dev/null 2>&1; then
   eval "$(fnm env --use-on-cd)"
 fi
 
 # --- pnpm / corepack ---
-export PNPM_HOME="$HOME/Library/pnpm"
+if [[ $OSTYPE == darwin* ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -51,8 +57,10 @@ if command -v eza >/dev/null 2>&1; then
 else
   alias ll='ls -lah'
 fi
-# bat (cat com syntax highlight)
-command -v bat >/dev/null 2>&1 && export BAT_THEME="ansi"
+# bat (cat com syntax highlight). No Ubuntu, bat e fd vêm como batcat e fdfind.
+command -v bat >/dev/null 2>&1 || { command -v batcat >/dev/null 2>&1 && alias bat='batcat'; }
+command -v fd >/dev/null 2>&1 || { command -v fdfind >/dev/null 2>&1 && alias fd='fdfind'; }
+export BAT_THEME="ansi"
 # zoxide (cd inteligente: use `z <parte-do-nome>`)
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 # fzf (Ctrl+R histórico, Ctrl+T arquivos)
@@ -83,13 +91,18 @@ if command -v starship >/dev/null 2>&1; then
 fi
 
 # --- Plugins do zsh ---
+# Homebrew no Mac, apt (/usr/share) no Linux.
+_zsh_plugin() {
+  local d
+  for d in /opt/homebrew/share /usr/share; do
+    [ -f "$d/$1/$1.zsh" ] && { source "$d/$1/$1.zsh"; return; }
+  done
+}
 # autosuggestions: sugere comandos do histórico (aceita com ->)
-[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] && \
-  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+_zsh_plugin zsh-autosuggestions
 # syntax-highlighting: colore o comando enquanto você digita.
 # IMPORTANTE: precisa ser o ÚLTIMO source do arquivo.
-[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && \
-  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+_zsh_plugin zsh-syntax-highlighting
 
 # LM Studio CLI (lms)
 [ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
@@ -179,7 +192,7 @@ claude_profile_shared() {
     [ -e "$HOME/.claude/$item" ] && [ ! -e "$dir/$item" ] && ln -s "$HOME/.claude/$item" "$dir/$item"
   done
   # MCPs de usuário moram no .claude.json (junto do login): copia só na criação.
-  [ ! -e "$dir/.claude.json" ] && command -v jq >/dev/null &&
+  [ ! -e "$dir/.claude.json" ] && [ -r "$HOME/.claude/.claude.json" ] && command -v jq >/dev/null &&
     jq '{mcpServers}' "$HOME/.claude/.claude.json" > "$dir/.claude.json" 2>/dev/null &&
     chmod 600 "$dir/.claude.json"
   claude_profile "$nome"
@@ -187,6 +200,9 @@ claude_profile_shared() {
 claude_profile_shared contato
 claude_profile_shared ranielli
 claude_profile_shared orca   # conta dedicada da VM orca-dev, também usável no Mac
+# No WSL (Windows) a orca-dev não é alcançável: sem leitura remota, a orca fica
+# reservada fixa (o claude-auto só a usa com as outras três cheias).
+[ -n "${WSL_DISTRO_NAME:-}" ] && export CLAUDE_AUTO_REMOTES=""
 # `claude-auto` (script deste repo, linkado em ~/.local/bin) roda nessa fila
 # (pessoal → ranielli → contato → orca) e, quando a conta bate o limite, reabre
 # a mesma sessão na próxima. Veja "Troca automática de conta" no README.
