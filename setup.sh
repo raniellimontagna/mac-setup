@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # setup.sh — configura um Mac novo para desenvolvimento (Apple Silicon)
-# Uso:  bash setup.sh
+# Uso:  bash setup.sh            (--brasa recompila e reinstala o app do Brasa)
 # Seguro rodar várias vezes (idempotente).
 #
 set -euo pipefail
@@ -101,9 +101,25 @@ ln -sf "$DIR/gitignore_global" "$HOME/.gitignore_global"
 mkdir -p "$HOME/.config" "$HOME/.config/ghostty"
 ln -sf "$DIR/starship.toml" "$HOME/.config/starship.toml"
 ln -sf "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
-# claude-auto: troca de conta do Claude Code no limite (ligar com `claude-auto install`)
-mkdir -p "$HOME/.local/bin"
-ln -sf "$DIR/claude-auto" "$HOME/.local/bin/claude-auto"
+# Brasa e claude-auto (troca de conta do Claude Code no limite) moram no repo
+# privado raniellimontagna/brasa. Num Mac novo o clone só funciona depois de a
+# chave SSH estar no GitHub: se falhar, rode o setup de novo depois.
+BRASA="$HOME/Projetos/pessoal/brasa"
+mkdir -p "$HOME/.local/bin" "$HOME/Projetos/pessoal"
+if [ -d "$BRASA/.git" ]; then
+  git -C "$BRASA" pull --ff-only -q || warn "brasa: pull falhou (mudanças locais?)"
+else
+  git clone -q git@github.com:raniellimontagna/brasa.git "$BRASA" ||
+    warn "brasa: clone falhou (chave SSH no GitHub?); rode o setup de novo depois"
+fi
+if [ -x "$BRASA/claude-auto/claude-auto" ]; then
+  ln -sf "$BRASA/claude-auto/claude-auto" "$HOME/.local/bin/claude-auto"
+  # O app só é (re)compilado quando falta ou com --brasa: cada build reassina e
+  # reinicia o Brasa.
+  if [ ! -d "$HOME/Applications/Brasa.app" ] || [[ " $* " == *" --brasa "* ]]; then
+    bash "$BRASA/macos/build.sh" || warn "brasa: build falhou"
+  fi
+fi
 
 # --- 7. Node LTS via fnm + pnpm ---
 info "Instalando Node LTS via fnm..."
