@@ -187,14 +187,13 @@ claude_profile pessoal "$HOME/.claude"   # explícito; equivale ao `claude` puro
 # `claude-<nome> --continue` retoma a mesma sessão que estava no pessoal.
 claude_profile_shared() {
   local nome="$1" dir="$HOME/.claude-$1" item
-  mkdir -p "$dir"
+  mkdir -p -m 700 "$dir"
   for item in CLAUDE.md RTK.md settings.json agents skills plugins hooks scripts projects; do
     [ -e "$HOME/.claude/$item" ] && [ ! -e "$dir/$item" ] && ln -s "$HOME/.claude/$item" "$dir/$item"
   done
   # MCPs de usuário moram no .claude.json (junto do login): copia só na criação.
   [ ! -e "$dir/.claude.json" ] && [ -r "$HOME/.claude/.claude.json" ] && command -v jq >/dev/null &&
-    jq '{mcpServers}' "$HOME/.claude/.claude.json" > "$dir/.claude.json" 2>/dev/null &&
-    chmod 600 "$dir/.claude.json"
+    ( umask 077; jq '{mcpServers}' "$HOME/.claude/.claude.json" > "$dir/.claude.json" ) 2>/dev/null
   claude_profile "$nome"
 }
 claude_profile_shared contato
