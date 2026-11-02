@@ -6,6 +6,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# --- PATH sem repetição: o zsh ignora pasta já presente (zshenv, instaladores) ---
+typeset -U path PATH
+
 # --- Segredos locais (NÃO versionados — ver ~/.secrets.zsh) ---
 [ -f "$HOME/.secrets.zsh" ] && source "$HOME/.secrets.zsh"
 
