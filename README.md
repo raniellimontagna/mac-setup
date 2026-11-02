@@ -196,6 +196,26 @@ README de lá.
 - **Apps/pacotes**: edite o [`Brewfile`](./Brewfile) e rode `brew bundle`
 - **Shell**: edite o [`zshrc`](./zshrc) (é symlink, mudanças valem na hora)
 
+### Oh My Zsh + Powerlevel10k (opcional)
+
+O `zshrc` usa Oh My Zsh quando existe `~/.oh-my-zsh`; sem ele, cai no
+Starship + plugins do brew/apt. Para instalar (Mac ou Linux/WSL):
+
+```sh
+RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+C=~/.oh-my-zsh/custom
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $C/themes/powerlevel10k
+git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions $C/plugins/zsh-autosuggestions
+git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting $C/plugins/zsh-syntax-highlighting
+git clone --depth=1 https://github.com/zsh-users/zsh-completions $C/plugins/zsh-completions
+git clone --depth=1 https://github.com/Aloxaf/fzf-tab $C/plugins/fzf-tab
+git clone --depth=1 https://github.com/MichaelAquilina/zsh-you-should-use $C/plugins/you-should-use
+ln -sf "$PWD/p10k.zsh" ~/.p10k.zsh
+```
+
+O tema precisa de uma Nerd Font no terminal (ex.: JetBrainsMono Nerd Font).
+`p10k configure` refaz o visual pelo assistente e grava em `p10k.zsh`.
+
 ## Dicas
 
 ### Economia de tokens (agentes de IA)

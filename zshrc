@@ -1,5 +1,11 @@
 # ~/.zshrc — gerenciado pelo repo mac-setup (symlink)
 
+# --- Powerlevel10k instant prompt (precisa ficar no topo) ---
+# Só age se o tema estiver instalado; nada que pede input pode vir antes.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # --- Segredos locais (NÃO versionados — ver ~/.secrets.zsh) ---
 [ -f "$HOME/.secrets.zsh" ] && source "$HOME/.secrets.zsh"
 
@@ -48,6 +54,36 @@ setopt HIST_IGNORE_ALL_DUPS
 setopt SHARE_HISTORY
 setopt INC_APPEND_HISTORY
 
+# --- Oh My Zsh + Powerlevel10k (quando instalados) ---
+# Instalação: ver "Oh My Zsh" no README. Sem ~/.oh-my-zsh, o fim do arquivo
+# cai no fallback antigo (compinit + Starship + plugins do brew/apt).
+# Carrega ANTES dos aliases abaixo: o OMZ define ls/ll próprios e os nossos
+# (eza, git) precisam sobrescrever.
+export ZSH="$HOME/.oh-my-zsh"
+if [ -d "$ZSH" ]; then
+  if type brew &>/dev/null; then
+    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+  fi
+  # zsh-completions entra no fpath antes do compinit que o OMZ roda
+  fpath+=("${ZSH_CUSTOM:-$ZSH/custom}/plugins/zsh-completions/src")
+  [ -d "$ZSH/custom/themes/powerlevel10k" ] && ZSH_THEME="powerlevel10k/powerlevel10k"
+  zstyle ':omz:update' mode reminder   # avisa de update, não atualiza sozinho
+  plugins=(
+    git                     # aliases e completion do git
+    sudo                    # Esc Esc repete o último comando com sudo
+    extract                 # `x arquivo.zip|tar.gz|...` descompacta qualquer coisa
+    colored-man-pages
+    command-not-found       # sugere o pacote quando o comando não existe
+    docker docker-compose
+    you-should-use          # lembra do alias quando você digita o comando longo
+    fzf-tab                 # Tab abre o fzf nas sugestões (antes dos dois abaixo)
+    zsh-autosuggestions     # sugere do histórico (aceita com ->)
+    zsh-syntax-highlighting # precisa ser o último plugin
+  )
+  source "$ZSH/oh-my-zsh.sh"
+  [ -f "$HOME/.p10k.zsh" ] && source "$HOME/.p10k.zsh"
+fi
+
 # --- CLI modernas ---
 # eza (ls moderno). Se não existir, cai no ls normal.
 if command -v eza >/dev/null 2>&1; then
@@ -79,30 +115,33 @@ alias projetos='cd ~/Projetos'
 alias ios='open -a Simulator'                    # abre o iOS Simulator
 alias ios-list='xcrun simctl list devices'       # lista os simuladores
 
-# --- Autocompletion do git/brew ---
-if type brew &>/dev/null; then
-  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-fi
-autoload -Uz compinit && compinit
+# --- Fallback sem Oh My Zsh: completion, Starship e plugins do brew/apt ---
+if [ ! -d "$ZSH" ]; then
+  # --- Autocompletion do git/brew ---
+  if type brew &>/dev/null; then
+    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+  fi
+  autoload -Uz compinit && compinit
 
-# --- Prompt: Starship ---
-if command -v starship >/dev/null 2>&1; then
-  eval "$(starship init zsh)"
-fi
+  # --- Prompt: Starship ---
+  if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+  fi
 
-# --- Plugins do zsh ---
-# Homebrew no Mac, apt (/usr/share) no Linux.
-_zsh_plugin() {
-  local d
-  for d in /opt/homebrew/share /usr/share; do
-    [ -f "$d/$1/$1.zsh" ] && { source "$d/$1/$1.zsh"; return; }
-  done
-}
-# autosuggestions: sugere comandos do histórico (aceita com ->)
-_zsh_plugin zsh-autosuggestions
-# syntax-highlighting: colore o comando enquanto você digita.
-# IMPORTANTE: precisa ser o ÚLTIMO source do arquivo.
-_zsh_plugin zsh-syntax-highlighting
+  # --- Plugins do zsh ---
+  # Homebrew no Mac, apt (/usr/share) no Linux.
+  _zsh_plugin() {
+    local d
+    for d in /opt/homebrew/share /usr/share; do
+      [ -f "$d/$1/$1.zsh" ] && { source "$d/$1/$1.zsh"; return; }
+    done
+  }
+  # autosuggestions: sugere comandos do histórico (aceita com ->)
+  _zsh_plugin zsh-autosuggestions
+  # syntax-highlighting: colore o comando enquanto você digita.
+  # IMPORTANTE: precisa ser o ÚLTIMO source do arquivo.
+  _zsh_plugin zsh-syntax-highlighting
+fi
 
 # LM Studio CLI (lms)
 [ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
