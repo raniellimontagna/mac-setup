@@ -291,9 +291,6 @@ else
 fi
 
 
-# Added by Antigravity CLI installer
-export PATH="$HOME/.local/bin:$PATH"
-
 # Added by Antigravity IDE
 export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
 export TYPESAFE_API_KEY="$(security find-generic-password -a "$USER" -s typesafe-api-key -w 2>/dev/null)"
