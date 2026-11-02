@@ -232,10 +232,34 @@ claude-seek() {
 # Codex CLI multi-conta: mesmo padrão do claude_profile, só que via CODEX_HOME
 # (config.toml, auth.json, sessions e histórico ficam dentro do diretório).
 # `codex_profile <nome>` vira o comando `codex-<nome>` usando ~/.codex-<nome>.
+# O Codex recusa CODEX_HOME inexistente (não cria sozinho), por isso o mkdir.
 codex_profile() {
   local nome="$1" dir="${2:-$HOME/.codex-$1}"
+  [ -d "$dir" ] || mkdir -p "$dir"
   alias "codex-$nome"="CODEX_HOME='$dir' codex"
 }
 export CODEX_HOME="$HOME/.codex"
 codex_profile pessoal "$HOME/.codex"     # explícito; equivale ao `codex` puro
 codex_profile gui                        # conta do Gui, isolada em ~/.codex-gui
+codex_profile tala                       # conta da Tala, isolada em ~/.codex-tala
+
+# Chave do MCP do catálogo Tala: o valor mora no Keychain, não neste arquivo.
+# No Linux (WSL), o mesmo valor fica em ~/.config/mcp-secrets/tala (chmod 600).
+if [[ $OSTYPE == darwin* ]]; then
+  export TALA_API_KEY=$(security find-generic-password -s tala-api-key -w 2>/dev/null)
+else
+  export TALA_API_KEY=$(cat "$HOME/.config/mcp-secrets/tala" 2>/dev/null)
+fi
+
+
+# Added by Antigravity CLI installer
+export PATH="$HOME/.local/bin:$PATH"
+
+# Added by Antigravity IDE
+export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+export TYPESAFE_API_KEY="$(security find-generic-password -a "$USER" -s typesafe-api-key -w 2>/dev/null)"
+export NODE_AUTH_TOKEN="$(security find-generic-password -a "$USER" -s NODE_AUTH_TOKEN -w 2>/dev/null)"
+
+# ai-memory (memória compartilhada Claude/Codex): servidor LaunchAgent
+# com.github.akitaonrails.ai-memory na 49375 — a 49374 padrão é do OpenCode.
+export AI_MEMORY_SERVER_URL=http://127.0.0.1:49375
