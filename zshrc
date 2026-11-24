@@ -50,6 +50,10 @@ command -v go >/dev/null 2>&1 && export PATH="$PATH:$(go env GOPATH)/bin"
 # --- Editor padrão ---
 export EDITOR="code --wait"
 
+# --- agent-toolkit ---
+# Skills de linguagens que não uso ficam fora de qualquer reinstalação e --repair.
+export SKILLS_EXCLUDE="backend/go,backend/java,backend/kotlin"
+
 # --- Histórico melhor ---
 HISTSIZE=50000
 SAVEHIST=50000
